@@ -140,4 +140,34 @@ class TaskDecomposerTest {
                 "Should throw exception for null table number");
     }
 
+    @Test
+    @DisplayName("Should create three tasks for order with all product types")
+    void shouldCreateThreeTasksForAllProductTypes() {
+        // Given
+        Product drink = new Product("Coca Cola", ProductType.DRINK);
+        Product hotDish = new Product("Pizza", ProductType.HOT_DISH);
+        Product coldDish = new Product("Caesar Salad", ProductType.COLD_DISH);
+        Order order = new Order("G7", List.of(drink, hotDish, coldDish));
+
+        // When
+        List<Task> tasks = decomposer.decompose(order);
+
+        // Then
+        assertEquals(3, tasks.size(), "Should create three tasks");
+
+        long barTasks = tasks.stream()
+                .filter(task -> task.getStation() == Station.BAR)
+                .count();
+        long hotKitchenTasks = tasks.stream()
+                .filter(task -> task.getStation() == Station.HOT_KITCHEN)
+                .count();
+        long coldKitchenTasks = tasks.stream()
+                .filter(task -> task.getStation() == Station.COLD_KITCHEN)
+                .count();
+
+        assertEquals(1, barTasks, "Should have one BAR task");
+        assertEquals(1, hotKitchenTasks, "Should have one HOT_KITCHEN task");
+        assertEquals(1, coldKitchenTasks, "Should have one COLD_KITCHEN task");
+    }
+
 }
