@@ -35,7 +35,7 @@ class TaskDecomposerTest {
     }
 
     @Test
-    @DisplayName("Should create one task for order with single hot dish")
+    @DisplayName("Debe crear una tarea para un pedido con un solo plato caliente")
     void shouldCreateOneTaskForSingleHotDish() {
         // Given
         Product pizza = new Product("Pizza Margarita", ProductType.HOT_DISH);
@@ -50,7 +50,7 @@ class TaskDecomposerTest {
     }
 
     @Test
-    @DisplayName("Should create one task for order with single cold dish")
+    @DisplayName("Debe crear una tarea para un pedido con un solo plato frío")
     void shouldCreateOneTaskForSingleColdDish() {
         // Given
         Product salad = new Product("Caesar Salad", ProductType.COLD_DISH);
@@ -65,7 +65,7 @@ class TaskDecomposerTest {
     }
 
     @Test
-    @DisplayName("Should create separate tasks for different product types")
+    @DisplayName("Debe crear tareas separadas para distintos tipos de producto")
     void shouldCreateSeparateTasksForMixedOrder() {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
@@ -76,19 +76,19 @@ class TaskDecomposerTest {
         List<Task> tasks = decomposer.decompose(order);
 
         // Then
-        assertEquals(2, tasks.size(), "Should create two separate tasks");
+        assertEquals(2, tasks.size(), "Debe crear dos tareas separadas");
 
         boolean hasDrinkTask = tasks.stream()
                 .anyMatch(task -> task.getStation() == Station.BAR);
         boolean hasHotDishTask = tasks.stream()
                 .anyMatch(task -> task.getStation() == Station.HOT_KITCHEN);
 
-        assertTrue(hasDrinkTask, "Should have task for BARRA");
-        assertTrue(hasHotDishTask, "Should have task for COCINA_CALIENTE");
+        assertTrue(hasDrinkTask, "Debe existir una tarea para BAR");
+        assertTrue(hasHotDishTask, "Debe existir una tarea para la cocina caliente");
     }
 
     @Test
-    @DisplayName("Should group products of same type in single task")
+    @DisplayName("Debe agrupar productos del mismo tipo en una sola tarea")
     void shouldGroupProductsOfSameTypeInSingleTask() {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
@@ -99,13 +99,13 @@ class TaskDecomposerTest {
         List<Task> tasks = decomposer.decompose(order);
 
         // Then
-        assertEquals(1, tasks.size(), "Should create only ONE task for same station");
-        assertEquals(2, tasks.get(0).getProducts().size(), "Task should contain BOTH products");
+        assertEquals(1, tasks.size(), "Debe crear solo UNA tarea para la misma estación");
+        assertEquals(2, tasks.get(0).getProducts().size(), "La tarea debe contener ambos productos");
         assertEquals(Station.BAR, tasks.get(0).getStation());
     }
 
     @Test
-    @DisplayName("Should reject order with no products")
+    @DisplayName("Debe rechazar un pedido sin productos")
     void shouldRejectEmptyOrder() {
         // Given
         Order emptyOrder = new Order("F6", List.of());
@@ -114,21 +114,21 @@ class TaskDecomposerTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> decomposer.decompose(emptyOrder),
-                "Should throw exception for empty order");
+                "Debe lanzar excepción para pedido vacío");
     }
 
     @Test
-    @DisplayName("Should reject null order")
+    @DisplayName("Debe rechazar un pedido nulo")
     void shouldRejectNullOrder() {
         // When & Then
         assertThrows(
                 IllegalArgumentException.class,
                 () -> decomposer.decompose(null),
-                "Should throw exception for null order");
+                "Debe lanzar excepción para pedido nulo");
     }
 
     @Test
-    @DisplayName("Should reject order with null table number")
+    @DisplayName("Debe rechazar un pedido con número de mesa nulo")
     void shouldRejectNullTableNumber() {
         // Given
         Product product = new Product("Coca Cola", ProductType.DRINK);
@@ -137,11 +137,11 @@ class TaskDecomposerTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> new Order(null, List.of(product)),
-                "Should throw exception for null table number");
+                "Debe lanzar excepción para número de mesa nulo");
     }
 
     @Test
-    @DisplayName("Should create three tasks for order with all product types")
+    @DisplayName("Debe crear tres tareas para un pedido con todos los tipos de producto")
     void shouldCreateThreeTasksForAllProductTypes() {
         // Given
         Product drink = new Product("Coca Cola", ProductType.DRINK);
@@ -153,7 +153,7 @@ class TaskDecomposerTest {
         List<Task> tasks = decomposer.decompose(order);
 
         // Then
-        assertEquals(3, tasks.size(), "Should create three tasks");
+        assertEquals(3, tasks.size(), "Debe crear tres tareas");
 
         long barTasks = tasks.stream()
                 .filter(task -> task.getStation() == Station.BAR)
@@ -165,9 +165,9 @@ class TaskDecomposerTest {
                 .filter(task -> task.getStation() == Station.COLD_KITCHEN)
                 .count();
 
-        assertEquals(1, barTasks, "Should have one BAR task");
-        assertEquals(1, hotKitchenTasks, "Should have one HOT_KITCHEN task");
-        assertEquals(1, coldKitchenTasks, "Should have one COLD_KITCHEN task");
+        assertEquals(1, barTasks, "Debe tener una tarea para BAR");
+        assertEquals(1, hotKitchenTasks, "Debe tener una tarea para HOT_KITCHEN");
+        assertEquals(1, coldKitchenTasks, "Debe tener una tarea para COLD_KITCHEN");
     }
 
 }
