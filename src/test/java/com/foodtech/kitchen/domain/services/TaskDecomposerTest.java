@@ -49,7 +49,21 @@ class TaskDecomposerTest {
         assertEquals(Station.HOT_KITCHEN, tasks.get(0).getStation());
     }
 
-    
+    @Test
+    @DisplayName("Should create one task for order with single cold dish")
+    void shouldCreateOneTaskForSingleColdDish() {
+        // Given
+        Product salad = new Product("Caesar Salad", ProductType.COLD_DISH);
+        Order order = new Order("C3", List.of(salad));
 
+        // When
+        List<Task> tasks = decomposer.decompose(order);
+
+        // Then
+        assertEquals(1, tasks.size());
+        assertEquals(Station.COLD_KITCHEN, tasks.get(0).getStation());
+    }
+
+    
 
 }
