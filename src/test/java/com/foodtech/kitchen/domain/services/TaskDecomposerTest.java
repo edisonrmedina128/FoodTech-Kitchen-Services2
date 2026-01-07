@@ -127,4 +127,17 @@ class TaskDecomposerTest {
                 "Should throw exception for null order");
     }
 
+    @Test
+    @DisplayName("Should reject order with null table number")
+    void shouldRejectNullTableNumber() {
+        // Given
+        Product product = new Product("Coca Cola", ProductType.DRINK);
+
+        // When & Then
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Order(null, List.of(product)),
+                "Should throw exception for null table number");
+    }
+
 }
