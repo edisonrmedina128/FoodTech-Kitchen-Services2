@@ -172,7 +172,7 @@ class TaskDecomposerTest {
     }
 
     @Test
-    @DisplayName("Should create commands for each task")
+    @DisplayName("Debe crear comandos para cada tarea")
     void shouldCreateCommandsForEachTask() {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);

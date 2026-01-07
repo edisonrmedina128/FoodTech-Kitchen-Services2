@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PrepareHotDishCommandTest {
 
     @Test
-    @DisplayName("Should create hot dish command with correct station")
+    @DisplayName("Debe crear comando de plato caliente con estación correcta")
     void shouldCreateHotDishCommandWithCorrectStation() {
         // Given
         Product pizza = new Product("Pizza", ProductType.HOT_DISH);
@@ -26,7 +26,7 @@ class PrepareHotDishCommandTest {
     }
 
     @Test
-    @DisplayName("Should execute hot dish preparation")
+    @DisplayName("Debe ejecutar la preparación de plato caliente")
     void shouldExecuteHotDishPreparation() {
         // Given
         Product pizza = new Product("Pizza", ProductType.HOT_DISH);

@@ -20,7 +20,7 @@ class CommandFactoryTest {
     }
 
     @Test
-    @DisplayName("Should create PrepareDrinkCommand for DRINK products")
+    @DisplayName("Debe crear PrepareDrinkCommand para productos de tipo DRINK")
     void shouldCreateDrinkCommandForDrinkProducts() {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
@@ -35,7 +35,7 @@ class CommandFactoryTest {
     }
 
     @Test
-    @DisplayName("Should create PrepareHotDishCommand for HOT_DISH products")
+    @DisplayName("Debe crear PrepareHotDishCommand para productos de tipo HOT_DISH")
     void shouldCreateHotDishCommandForHotDishProducts() {
         // Given
         Product pizza = new Product("Pizza", ProductType.HOT_DISH);
@@ -50,7 +50,7 @@ class CommandFactoryTest {
     }
 
     @Test
-    @DisplayName("Should create PrepareColdDishCommand for COLD_DISH products")
+    @DisplayName("Debe crear PrepareColdDishCommand para productos de tipo COLD_DISH")
     void shouldCreateColdDishCommandForColdDishProducts() {
         // Given
         Product salad = new Product("Caesar Salad", ProductType.COLD_DISH);
@@ -65,7 +65,7 @@ class CommandFactoryTest {
     }
 
     @Test
-    @DisplayName("Should throw exception for unknown station")
+    @DisplayName("Debe lanzar excepción para estación desconocida")
     void shouldThrowExceptionForUnknownStation() {
         // Given
         Product product = new Product("Test", ProductType.DRINK);

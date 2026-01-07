@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PrepareDrinkCommandTest {
 
     @Test
-    @DisplayName("Should create drink command with correct station")
+    @DisplayName("Debe crear comando de bebida con estación correcta")
     void shouldCreateDrinkCommandWithCorrectStation() {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
@@ -27,7 +27,7 @@ class PrepareDrinkCommandTest {
     }
 
     @Test
-    @DisplayName("Should execute drink preparation")
+    @DisplayName("Debe ejecutar la preparación de bebida")
     void shouldExecuteDrinkPreparation() {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
@@ -38,7 +38,7 @@ class PrepareDrinkCommandTest {
     }
 
     @Test
-    @DisplayName("Should handle multiple drinks in one command")
+    @DisplayName("Debe manejar múltiples bebidas en un solo comando")
     void shouldHandleMultipleDrinks() {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
