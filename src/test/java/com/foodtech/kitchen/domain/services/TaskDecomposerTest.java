@@ -170,4 +170,28 @@ class TaskDecomposerTest {
         assertEquals(1, coldKitchenTasks, "Debe tener una tarea para COLD_KITCHEN");
     }
 
+    @Test
+    @DisplayName("Should create commands for each task")
+    void shouldCreateCommandsForEachTask() {
+        // Given
+        Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
+        Product pizza = new Product("Pizza", ProductType.HOT_DISH);
+        Order order = new Order("H8", List.of(cocaCola, pizza));
+
+        CommandFactory commandFactory = new CommandFactory();
+        TaskDecomposer decomposerWithCommands = new TaskDecomposer(commandFactory);
+
+        // When
+        List<Task> tasks = decomposerWithCommands.decompose(order);
+
+        // Then
+        assertEquals(2, tasks.size());
+        // Verificar que cada tarea puede crear su comando
+        for (Task task : tasks) {
+            Command command = commandFactory.createCommand(task.getStation(), task.getProducts());
+            assertNotNull(command);
+            assertEquals(task.getStation(), command.getStation());
+        }
+    }
+
 }

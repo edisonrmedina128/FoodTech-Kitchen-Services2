@@ -15,4 +15,6 @@ public class CommandFactory {
             case COLD_KITCHEN -> new PrepareColdDishCommand(products);
         };
     }
+
+    
 }
