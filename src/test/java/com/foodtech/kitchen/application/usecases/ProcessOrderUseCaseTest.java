@@ -1,5 +1,7 @@
 package com.foodtech.kitchen.application.usecases;
 
+import com.foodtech.kitchen.application.ports.out.CommandExecutor;
+import com.foodtech.kitchen.domain.commands.Command;
 import com.foodtech.kitchen.domain.model.*;
 import com.foodtech.kitchen.domain.services.*;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
@@ -18,13 +20,20 @@ class ProcessOrderUseCaseTest {
     private TaskRepository taskRepository;
     private TaskDecomposer taskDecomposer;
     private CommandFactory commandFactory;
+    private CommandExecutor commandExecutor;
 
     @BeforeEach
     void setUp() {
         taskRepository = mock(TaskRepository.class);
         commandFactory = new CommandFactory();
-        taskDecomposer = new TaskDecomposer(commandFactory);
-        useCase = new ProcessOrderUseCase(taskDecomposer, taskRepository);
+        commandExecutor = mock(CommandExecutor.class);
+        
+        OrderValidator orderValidator = new OrderValidator();
+        ProductStationMapper productStationMapper = new ProductStationMapper();
+        TaskFactory taskFactory = new TaskFactory();
+        taskDecomposer = new TaskDecomposer(orderValidator, productStationMapper, taskFactory);
+        
+        useCase = new ProcessOrderUseCase(taskDecomposer, taskRepository, commandFactory, commandExecutor);
     }
 
     @Test
@@ -40,6 +49,7 @@ class ProcessOrderUseCaseTest {
         // Then
         assertEquals(1, tasks.size());
         verify(taskRepository, times(1)).saveAll(anyList());
+        verify(commandExecutor, times(1)).executeAll(anyList());
     }
 
     @Test

@@ -13,10 +13,16 @@ import static org.junit.jupiter.api.Assertions.*;
 class TaskDecomposerTest {
 
     private TaskDecomposer decomposer;
+    private OrderValidator orderValidator;
+    private ProductStationMapper productStationMapper;
+    private TaskFactory taskFactory;
 
     @BeforeEach
     void setUp() {
-        decomposer = new TaskDecomposer();
+        orderValidator = new OrderValidator();
+        productStationMapper = new ProductStationMapper();
+        taskFactory = new TaskFactory();
+        decomposer = new TaskDecomposer(orderValidator, productStationMapper, taskFactory);
     }
 
     @Test
@@ -180,10 +186,9 @@ class TaskDecomposerTest {
         Order order = new Order("H8", List.of(cocaCola, pizza));
 
         CommandFactory commandFactory = new CommandFactory();
-        TaskDecomposer decomposerWithCommands = new TaskDecomposer(commandFactory);
 
         // When
-        List<Task> tasks = decomposerWithCommands.decompose(order);
+        List<Task> tasks = decomposer.decompose(order);
 
         // Then
         assertEquals(2, tasks.size());
