@@ -31,26 +31,49 @@ jobs:
       run: chmod +x gradlew
       
     - name: Clean build
-      run: ./gradlew clean
+      run: ./gradlew clean --no-build-cache
       
     - name: Build project
       run: ./gradlew build -x test
       
     - name: Run tests with coverage
-      run: ./gradlew test jacocoTestReport
+      run: ./gradlew test jacocoTestReport --rerun-tasks
+      
+    - name: Display coverage summary
+      if: always()
+      run: |
+        if [ -f build/reports/jacoco/test/html/index.html ]; then
+          echo "## 📊 Test Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Extract coverage percentages from the HTML report
+          INSTRUCTION=$(grep -oP 'Total.*?(\d+)%' build/reports/jacoco/test/html/index.html | grep -oP '\d+%' | head -1 || echo "N/A")
+          BRANCH=$(grep -oP 'Total.*?(\d+)%' build/reports/jacoco/test/html/index.html | grep -oP '\d+%' | tail -1 || echo "N/A")
+          
+          echo "| Metric | Coverage |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Instructions | $INSTRUCTION |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branches | $BRANCH |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📁 Full report available in artifacts" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ Coverage report not found" >> $GITHUB_STEP_SUMMARY
+        fi
       
     - name: Verify test coverage
-      run: ./gradlew jacocoTestCoverageVerification
+      run: ./gradlew jacocoTestCoverageVerification --rerun-tasks
       
     - name: Generate coverage report
       if: always()
       run: |
-        echo "## Test Coverage Report" >> $GITHUB_STEP_SUMMARY
-        if [ -f build/reports/jacoco/test/html/index.html ]; then
-          echo "Coverage report generated successfully" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "Coverage report not found" >> $GITHUB_STEP_SUMMARY
+        echo "## 📋 Detailed Coverage by Package" >> $GITHUB_STEP_SUMMARY
+        if [ -f build/reports/jacoco/test/jacocoTestReport.xml ]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          ./gradlew jacocoTestReport --console=plain 2>&1 | grep -A 50 "jacoco" || echo "Coverage details in artifacts"
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
         fi
+
     
     - name: Upload test results
       if: always()
