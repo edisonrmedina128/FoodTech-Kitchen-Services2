@@ -2,6 +2,7 @@ package com.foodtech.kitchen.infrastructure.persistence.adapters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.foodtech.kitchen.application.ports.out.OrderRepository;
 import com.foodtech.kitchen.domain.model.Order;
 import com.foodtech.kitchen.infrastructure.persistence.jpa.OrderJpaRepository;
 import com.foodtech.kitchen.infrastructure.persistence.jpa.entities.OrderEntity;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.stream.Collectors;
 
 @Component
-public class OrderRepositoryAdapter {
+public class OrderRepositoryAdapter implements OrderRepository {
 
     private final OrderJpaRepository jpaRepository;
     private final ObjectMapper objectMapper;
