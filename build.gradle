@@ -65,33 +65,23 @@ jacocoTestReport {
         csv.required = false
     }
     
-    classDirectories.setFrom(
-        files(classDirectories.files.collect {
-            fileTree(dir: it) {
-                exclude '**/KitchenServiceApplication.class'
-                exclude '**/KitchenServiceApplication$*.class'
-                exclude '**/infrastructure/config/**'
-                exclude '**/*Dto.class'
-                exclude '**/*DTO.class'
-            }
-        })
-    )
+    doFirst {
+        classDirectories.setFrom(
+            files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: [
+                    '**/KitchenServiceApplication.class',
+                    '**/KitchenServiceApplication$*.class',
+                    '**/infrastructure/config/**',
+                    '**/*Dto.class',
+                    '**/*DTO.class'
+                ])
+            })
+        )
+    }
 }
 
 jacocoTestCoverageVerification {
     dependsOn jacocoTestReport
-    
-    classDirectories.setFrom(
-        files(classDirectories.files.collect {
-            fileTree(dir: it) {
-                exclude '**/KitchenServiceApplication.class'
-                exclude '**/KitchenServiceApplication$*.class'
-                exclude '**/infrastructure/config/**'
-                exclude '**/*Dto.class'
-                exclude '**/*DTO.class'
-            }
-        })
-    )
     
     violationRules {
         rule {
@@ -99,6 +89,20 @@ jacocoTestCoverageVerification {
                 minimum = 0.70
             }
         }
+    }
+    
+    doFirst {
+        classDirectories.setFrom(
+            files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: [
+                    '**/KitchenServiceApplication.class',
+                    '**/KitchenServiceApplication$*.class',
+                    '**/infrastructure/config/**',
+                    '**/*Dto.class',
+                    '**/*DTO.class'
+                ])
+            })
+        )
     }
 }
 
