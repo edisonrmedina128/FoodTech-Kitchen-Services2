@@ -14,15 +14,13 @@ class TaskDecomposerTest {
 
     private TaskDecomposer decomposer;
     private OrderValidator orderValidator;
-    private ProductStationMapper productStationMapper;
     private TaskFactory taskFactory;
 
     @BeforeEach
     void setUp() {
         orderValidator = new OrderValidator();
-        productStationMapper = new ProductStationMapper();
         taskFactory = new TaskFactory();
-        decomposer = new TaskDecomposer(orderValidator, productStationMapper, taskFactory);
+        decomposer = new TaskDecomposer(orderValidator, taskFactory);
     }
 
     @Test

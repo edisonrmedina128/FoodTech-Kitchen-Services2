@@ -4,19 +4,16 @@ import com.foodtech.kitchen.domain.model.*;
 
 import java.util.*;
 
-//HUMAN REVIEW: Separé responsabilidades en clases dedicadas (OrderValidator, ProductStationMapper, TaskFactory).
-//Ahora TaskDecomposer solo orquesta el flujo, cumpliendo SRP. Cada clase tiene una única razón de cambio.
+//HUMAN REVIEW: Eliminé ProductStationMapper porque ProductType ahora tiene getStation().
+//Cumple OCP: extensible sin modificar código. Cumple SRP: orquesta validación y creación.
 public class TaskDecomposer {
 
     private final OrderValidator orderValidator;
-    private final ProductStationMapper stationMapper;
     private final TaskFactory taskFactory;
 
     public TaskDecomposer(OrderValidator orderValidator,
-            ProductStationMapper stationMapper,
             TaskFactory taskFactory) {
         this.orderValidator = orderValidator;
-        this.stationMapper = stationMapper;
         this.taskFactory = taskFactory;
     }
 
@@ -32,7 +29,7 @@ public class TaskDecomposer {
         Map<Station, List<Product>> productsByStation = new HashMap<>();
 
         for (Product product : order.getProducts()) {
-            Station station = stationMapper.mapToStation(product.getType());
+            Station station = product.getType().getStation();
             productsByStation
                     .computeIfAbsent(station, k -> new ArrayList<>())
                     .add(product);

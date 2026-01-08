@@ -29,9 +29,8 @@ class ProcessOrderUseCaseTest {
         commandExecutor = mock(CommandExecutor.class);
         
         OrderValidator orderValidator = new OrderValidator();
-        ProductStationMapper productStationMapper = new ProductStationMapper();
         TaskFactory taskFactory = new TaskFactory();
-        taskDecomposer = new TaskDecomposer(orderValidator, productStationMapper, taskFactory);
+        taskDecomposer = new TaskDecomposer(orderValidator, taskFactory);
         
         useCase = new ProcessOrderUseCase(taskDecomposer, taskRepository, commandFactory, commandExecutor);
     }

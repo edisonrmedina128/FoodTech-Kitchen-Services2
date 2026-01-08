@@ -4,7 +4,6 @@ import com.foodtech.kitchen.application.ports.in.ProcessOrderPort;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
 import com.foodtech.kitchen.application.usecases.ProcessOrderUseCase;
 import com.foodtech.kitchen.domain.services.OrderValidator;
-import com.foodtech.kitchen.domain.services.ProductStationMapper;
 import com.foodtech.kitchen.domain.services.TaskDecomposer;
 import com.foodtech.kitchen.domain.services.TaskFactory;
 import org.springframework.context.annotation.Bean;
@@ -21,11 +20,6 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public ProductStationMapper productStationMapper() {
-        return new ProductStationMapper();
-    }
-
-    @Bean
     public TaskFactory taskFactory() {
         return new TaskFactory();
     }
@@ -37,9 +31,8 @@ public class ApplicationConfig {
 
     @Bean
     public TaskDecomposer taskDecomposer(OrderValidator orderValidator,
-                                         ProductStationMapper productStationMapper,
                                          TaskFactory taskFactory) {
-        return new TaskDecomposer(orderValidator, productStationMapper, taskFactory);
+        return new TaskDecomposer(orderValidator, taskFactory);
     }
 
     @Bean
