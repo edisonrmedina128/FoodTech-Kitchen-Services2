@@ -3,11 +3,11 @@ package com.foodtech.kitchen.infrastructure.rest.mapper;
 import com.foodtech.kitchen.domain.model.Order;
 import com.foodtech.kitchen.domain.model.ProductType;
 import com.foodtech.kitchen.infrastructure.rest.dto.CreateOrderRequest;
+import com.foodtech.kitchen.infrastructure.rest.dto.ProductRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,8 +20,8 @@ class OrderMapperTest {
         CreateOrderRequest request = new CreateOrderRequest(
             "A1",
             List.of(
-                Map.of("name", "Coca Cola", "type", "DRINK"),
-                Map.of("name", "Pizza", "type", "HOT_DISH")
+                new ProductRequest("Coca Cola", "DRINK"),
+                new ProductRequest("Pizza", "HOT_DISH")
             )
         );
 
@@ -42,7 +42,7 @@ class OrderMapperTest {
         CreateOrderRequest request = new CreateOrderRequest(
             "B2",
             List.of(
-                Map.of("name", "Sprite", "type", "DRINK")
+                new ProductRequest("Sprite", "DRINK")
             )
         );
 
@@ -61,7 +61,7 @@ class OrderMapperTest {
         CreateOrderRequest request = new CreateOrderRequest(
             "C3",
             List.of(
-                Map.of("name", "Invalid", "type", "INVALID_TYPE")
+                new ProductRequest("Invalid", "INVALID_TYPE")
             )
         );
 

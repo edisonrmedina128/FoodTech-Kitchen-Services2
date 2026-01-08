@@ -11,12 +11,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
+//HUMAN REVIEW: Simplificado controller para cumplir SRP. Solo coordina: mapeo, ejecución, respuesta.
+//Manejo de errores delegado a GlobalExceptionHandler. Eliminado OrderResponseFactory (sobre-ingeniería/YAGNI).
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
 
+    private static final String ORDER_SUCCESS_MESSAGE = "Order processed successfully";
+    
     private final ProcessOrderPort processOrderPort;
 
     public OrderController(ProcessOrderPort processOrderPort) {
@@ -24,36 +27,15 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createOrder(@RequestBody CreateOrderRequest request) {
-        try {
-            // Map DTO to domain
-            Order order = OrderMapper.toDomain(request);
-            
-            // Execute use case
-            List<Task> tasks = processOrderPort.execute(order);
-            
-            // Build response
-            CreateOrderResponse response = new CreateOrderResponse(
-                order.getTableNumber(),
-                tasks.size(),
-                "Order processed successfully"
-            );
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-            
-        } catch (IllegalArgumentException e) {
-            Map<String, String> error = Map.of(
-                "error", e.getMessage(),
-                "message", "Validation failed"
-            );
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-            
-        } catch (Exception e) {
-            Map<String, String> error = Map.of(
-                "error", "Internal server error",
-                "message", e.getMessage()
-            );
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-        }
+    public ResponseEntity<CreateOrderResponse> createOrder(@RequestBody CreateOrderRequest request) {
+        Order order = OrderMapper.toDomain(request);
+        List<Task> tasks = processOrderPort.execute(order);
+        CreateOrderResponse response = new CreateOrderResponse(
+            order.getTableNumber(),
+            tasks.size(),
+            ORDER_SUCCESS_MESSAGE
+        );
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
