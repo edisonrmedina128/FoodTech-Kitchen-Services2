@@ -73,8 +73,7 @@ jacocoTestReport {
                 '**/KitchenServiceApplication.class',
                 '**/KitchenServiceApplication$*.class',
                 '**/infrastructure/config/**',
-                '**/*Dto.class',
-                '**/*DTO.class'
+                '**/*JpaRepository.class'
             ])
         }))
     }
@@ -98,8 +97,7 @@ jacocoTestCoverageVerification {
                 '**/KitchenServiceApplication.class',
                 '**/KitchenServiceApplication$*.class',
                 '**/infrastructure/config/**',
-                '**/*Dto.class',
-                '**/*DTO.class'
+                '**/*JpaRepository.class'
             ])
         }))
     }
