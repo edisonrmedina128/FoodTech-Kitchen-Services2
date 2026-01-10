@@ -2,6 +2,7 @@ package com.foodtech.kitchen.infrastructure.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
+import com.foodtech.kitchen.domain.model.Station;
 import com.foodtech.kitchen.domain.model.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -176,5 +178,40 @@ class TaskControllerIntegrationTest {
             .andExpect(jsonPath("$.error").value("Task must be in IN_PREPARATION status to complete"))
             .andExpect(jsonPath("$.message").value("Invalid state transition"))
             .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    @DisplayName("HU-003 Scenario 4: Should return only completed tasks when filtering by status")
+    @org.springframework.transaction.annotation.Transactional
+    void shouldReturnOnlyCompletedTasksForStation() throws Exception {
+        // Given - la estación de barra tiene tareas en diferentes estados
+        List<Task> barTasks = taskRepository.findByStation(Station.BAR);
+        
+        // Create 2 completed tasks, 1 in preparation, and 1 pending
+        Task task1 = barTasks.get(0);
+        Task task2 = barTasks.get(1);
+        
+        // Complete task1: start and complete
+        mockMvc.perform(patch("/api/tasks/" + task1.getId() + "/start"))
+            .andExpect(status().isOk());
+        mockMvc.perform(patch("/api/tasks/" + task1.getId() + "/complete"))
+            .andExpect(status().isOk());
+        
+        // Complete task2: start and complete
+        mockMvc.perform(patch("/api/tasks/" + task2.getId() + "/start"))
+            .andExpect(status().isOk());
+        mockMvc.perform(patch("/api/tasks/" + task2.getId() + "/complete"))
+            .andExpect(status().isOk());
+
+        // When - se consulta el historial de tareas completadas de barra
+        mockMvc.perform(get("/api/tasks/station/BAR?status=COMPLETED"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].status").value("COMPLETED"))
+            .andExpect(jsonPath("$[0].startedAt").exists())
+            .andExpect(jsonPath("$[0].completedAt").exists())
+            .andExpect(jsonPath("$[1].status").value("COMPLETED"))
+            .andExpect(jsonPath("$[1].startedAt").exists())
+            .andExpect(jsonPath("$[1].completedAt").exists());
     }
 }
