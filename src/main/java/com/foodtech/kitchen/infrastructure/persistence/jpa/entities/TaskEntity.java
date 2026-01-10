@@ -49,6 +49,9 @@ public class TaskEntity {
     @Column(name = "started_at")
     private LocalDateTime startedAt;
 
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

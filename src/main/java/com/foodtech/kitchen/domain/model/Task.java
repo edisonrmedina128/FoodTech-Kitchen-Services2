@@ -13,6 +13,7 @@ public class Task {
     private final LocalDateTime createdAt;
     private TaskStatus status;
     private LocalDateTime startedAt;
+    private LocalDateTime completedAt;
 
     public Task(Long id, Long orderId, Station station, String tableNumber, List<Product> products, LocalDateTime createdAt) {
         validate(id, orderId, station, tableNumber, products, createdAt);
@@ -24,6 +25,7 @@ public class Task {
         this.createdAt = createdAt;
         this.status = TaskStatus.PENDING;
         this.startedAt = null;
+        this.completedAt = null;
     }
 
     private void validate(Long id, Long orderId, Station station, String tableNumber, List<Product> products, LocalDateTime createdAt) {
@@ -53,13 +55,22 @@ public class Task {
         this.startedAt = LocalDateTime.now();
     }
 
+    public void complete() {
+        if (this.status != TaskStatus.IN_PREPARATION) {
+            throw new IllegalStateException("Task must be in IN_PREPARATION status to complete");
+        }
+        this.status = TaskStatus.COMPLETED;
+        this.completedAt = LocalDateTime.now();
+    }
+
     // Factory method for reconstructing Task from persistence
     public static Task reconstruct(Long id, Long orderId, Station station, String tableNumber, 
                                    List<Product> products, LocalDateTime createdAt, 
-                                   TaskStatus status, LocalDateTime startedAt) {
+                                   TaskStatus status, LocalDateTime startedAt, LocalDateTime completedAt) {
         Task task = new Task(id, orderId, station, tableNumber, products, createdAt);
         task.status = status;
         task.startedAt = startedAt;
+        task.completedAt = completedAt;
         return task;
     }
 
@@ -93,5 +104,9 @@ public class Task {
 
     public LocalDateTime getStartedAt() {
         return startedAt;
+    }
+
+    public LocalDateTime getCompletedAt() {
+        return completedAt;
     }
 }

@@ -34,6 +34,7 @@ public class TaskEntityMapper {
                 .createdAt(task.getCreatedAt())
                 .status(task.getStatus())
                 .startedAt(task.getStartedAt())
+                .completedAt(task.getCompletedAt())
                 .build();
     }
 
@@ -50,7 +51,8 @@ public class TaskEntityMapper {
                 products,
                 entity.getCreatedAt(),
                 entity.getStatus(),
-                entity.getStartedAt()
+                entity.getStartedAt(),
+                entity.getCompletedAt()
         );
     }
 }
