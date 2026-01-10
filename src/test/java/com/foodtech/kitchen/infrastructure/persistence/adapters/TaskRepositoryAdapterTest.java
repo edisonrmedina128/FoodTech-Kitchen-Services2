@@ -20,8 +20,10 @@ class TaskRepositoryAdapterTest {
     @BeforeEach
     void setUp() {
         jpaRepository = mock(TaskJpaRepository.class);
+        com.foodtech.kitchen.infrastructure.persistence.mappers.ProductEntityMapper productMapper =
+            new com.foodtech.kitchen.infrastructure.persistence.mappers.ProductEntityMapper();
         com.foodtech.kitchen.infrastructure.persistence.mappers.TaskEntityMapper mapper = 
-            new com.foodtech.kitchen.infrastructure.persistence.mappers.TaskEntityMapper();
+            new com.foodtech.kitchen.infrastructure.persistence.mappers.TaskEntityMapper(productMapper);
         adapter = new TaskRepositoryAdapter(jpaRepository, mapper);
     }
 

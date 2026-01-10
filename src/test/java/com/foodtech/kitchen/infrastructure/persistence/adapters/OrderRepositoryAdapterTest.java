@@ -21,8 +21,10 @@ class OrderRepositoryAdapterTest {
     @BeforeEach
     void setUp() {
         jpaRepository = mock(OrderJpaRepository.class);
+        com.foodtech.kitchen.infrastructure.persistence.mappers.ProductEntityMapper productMapper =
+            new com.foodtech.kitchen.infrastructure.persistence.mappers.ProductEntityMapper();
         com.foodtech.kitchen.infrastructure.persistence.mappers.OrderEntityMapper mapper = 
-            new com.foodtech.kitchen.infrastructure.persistence.mappers.OrderEntityMapper();
+            new com.foodtech.kitchen.infrastructure.persistence.mappers.OrderEntityMapper(productMapper);
         adapter = new OrderRepositoryAdapter(jpaRepository, mapper);
     }
 

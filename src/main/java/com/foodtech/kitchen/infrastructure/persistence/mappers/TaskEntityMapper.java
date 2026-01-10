@@ -14,11 +14,15 @@ import java.util.stream.Collectors;
 @Component
 public class TaskEntityMapper {
 
-    // ✅ NO más ObjectMapper - JPA maneja las relaciones
+    private final ProductEntityMapper productEntityMapper;
+
+    public TaskEntityMapper(ProductEntityMapper productEntityMapper) {
+        this.productEntityMapper = productEntityMapper;
+    }
 
     public TaskEntity toEntity(Task task) {
         List<TaskProductEntity> productEntities = task.getProducts().stream()
-                .map(this::toProductEntity)
+                .map(productEntityMapper::toTaskProductEntity)
                 .collect(Collectors.toList());
 
         return TaskEntity.builder()
@@ -28,16 +32,9 @@ public class TaskEntityMapper {
                 .build();
     }
 
-    private TaskProductEntity toProductEntity(Product product) {
-        return TaskProductEntity.builder()
-                .name(product.getName())
-                .type(product.getType())
-                .build();
-    }
-
     public Task toDomain(TaskEntity entity) {
         List<Product> products = entity.getProducts().stream()
-                .map(this::toProduct)
+                .map(productEntityMapper::toDomain)
                 .collect(Collectors.toList());
 
         return new Task(
@@ -45,9 +42,5 @@ public class TaskEntityMapper {
                 entity.getTableNumber(),
                 products
         );
-    }
-
-    private Product toProduct(TaskProductEntity entity) {
-        return new Product(entity.getName(), entity.getType());
     }
 }
