@@ -29,4 +29,26 @@ class TaskTest {
         assertEquals(TaskStatus.IN_PREPARATION, task.getStatus());
         assertNotNull(task.getStartedAt());
     }
+
+    @Test
+    void shouldTransitionFromInPreparationToCompleted() {
+        // Given
+        Product product = new Product("Cerveza", ProductType.DRINK);
+        Task task = new Task(
+                1L,
+                1L,
+                Station.BAR,
+                "A1",
+                List.of(product),
+                LocalDateTime.now()
+        );
+        task.start();
+
+        // When
+        task.complete();
+
+        // Then
+        assertEquals(TaskStatus.COMPLETED, task.getStatus());
+        assertNotNull(task.getCompletedAt());
+    }
 }
