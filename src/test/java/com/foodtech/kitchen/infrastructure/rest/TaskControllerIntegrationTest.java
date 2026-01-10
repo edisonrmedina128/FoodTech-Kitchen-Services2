@@ -139,4 +139,25 @@ class TaskControllerIntegrationTest {
             .andExpect(jsonPath("$.status").value("IN_PREPARATION"))
             .andExpect(jsonPath("$.startedAt").exists());
     }
+
+    @Test
+    @DisplayName("HU-003 Scenario 2: Should complete task preparation and calculate duration")
+    @org.springframework.transaction.annotation.Transactional
+    void shouldCompleteTaskPreparation() throws Exception {
+        // Given - existe una tarea en estado EN_PREPARACION
+        List<Task> allTasks = taskRepository.findAll();
+        Long taskId = allTasks.get(0).getId();
+        
+        // Start the task first
+        mockMvc.perform(patch("/api/tasks/" + taskId + "/start"))
+            .andExpect(status().isOk());
+
+        // When - el cocinero marca la tarea como completada
+        mockMvc.perform(patch("/api/tasks/" + taskId + "/complete"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(taskId))
+            .andExpect(jsonPath("$.status").value("COMPLETED"))
+            .andExpect(jsonPath("$.completedAt").exists())
+            .andExpect(jsonPath("$.startedAt").exists());
+    }
 }

@@ -28,7 +28,8 @@ public class TaskMapper {
             products,
             task.getCreatedAt(),
             task.getStatus().name(),
-            task.getStartedAt()
+            task.getStartedAt(),
+            task.getCompletedAt()
         );
     }
 

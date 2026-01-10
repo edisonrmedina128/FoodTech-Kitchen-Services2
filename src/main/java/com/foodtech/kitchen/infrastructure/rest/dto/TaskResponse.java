@@ -12,5 +12,6 @@ public record TaskResponse(
     List<Map<String, String>> products,
     LocalDateTime createdAt,
     String status,
-    LocalDateTime startedAt
+    LocalDateTime startedAt,
+    LocalDateTime completedAt
 ) {}
