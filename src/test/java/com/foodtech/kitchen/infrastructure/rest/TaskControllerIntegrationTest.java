@@ -76,4 +76,16 @@ class TaskControllerIntegrationTest {
             .andExpect(jsonPath("$[0].tableNumber").exists())
             .andExpect(jsonPath("$[0].products").isArray());
     }
+
+    @Test
+    @DisplayName("Scenario 2: Should return empty list when no tasks for station")
+    void shouldReturnEmptyListWhenNoTasksForStation() throws Exception {
+        // Given - Todas las tareas son de HOT_KITCHEN, ninguna para COLD_KITCHEN
+        // When - el encargado de cocina fría consulta sus tareas
+        // Then - el sistema muestra que no hay tareas pendientes
+        mockMvc.perform(get("/api/tasks/station/COLD_KITCHEN"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+    }
 }

@@ -45,4 +45,20 @@ class GetTasksByStationUseCaseTest {
         assertTrue(tasks.stream().allMatch(task -> task.getStation() == Station.BAR));
         verify(taskRepository, times(1)).findByStation(Station.BAR);
     }
+
+    @Test
+    @DisplayName("Should return empty list when no tasks for station")
+    void shouldReturnEmptyListWhenNoTasksForStation() {
+        // Given - no hay tareas asignadas a la estación de barra
+        when(taskRepository.findByStation(Station.BAR))
+            .thenReturn(List.of());
+
+        // When - el encargado de barra consulta sus tareas
+        List<Task> tasks = useCase.execute(Station.BAR);
+
+        // Then - el sistema muestra que no hay tareas pendientes
+        assertNotNull(tasks);
+        assertTrue(tasks.isEmpty());
+        verify(taskRepository, times(1)).findByStation(Station.BAR);
+    }
 }
