@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -213,5 +214,76 @@ class TaskControllerIntegrationTest {
             .andExpect(jsonPath("$[1].status").value("COMPLETED"))
             .andExpect(jsonPath("$[1].startedAt").exists())
             .andExpect(jsonPath("$[1].completedAt").exists());
+    }
+
+    @Test
+    @DisplayName("HU-003 Scenario 5: Should return order status based on task states")
+    @org.springframework.transaction.annotation.Transactional
+    void shouldReturnOrderStatusBasedOnTaskStates() throws Exception {
+        // Given - crear un pedido con múltiples productos que generen 3 tareas (diferentes estaciones)
+        String orderRequest = objectMapper.writeValueAsString(Map.of(
+            "products", List.of(
+                Map.of("name", "Coca Cola", "type", "DRINK"),
+                Map.of("name", "Sprite", "type", "DRINK"),  // Same station as Coca Cola
+                Map.of("name", "Pizza", "type", "HOT_DISH"),
+                Map.of("name", "Ensalada", "type", "COLD_DISH")
+            ),
+            "tableNumber", "A1"
+        ));
+
+        mockMvc.perform(post("/api/orders")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(orderRequest))
+            .andExpect(status().isCreated());
+
+        // Get the order ID from the created tasks
+        List<Task> allTasks = taskRepository.findAll();
+        Long orderId = allTasks.get(allTasks.size() - 1).getOrderId();
+        List<Task> orderTasks = taskRepository.findByOrderId(orderId);
+        
+        // Should have created 3 tasks (BAR, HOT_KITCHEN, COLD_KITCHEN)
+        assertEquals(3, orderTasks.size());
+        
+        // Initially all tasks are PENDING
+        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.orderId").value(orderId.toString()))
+            .andExpect(jsonPath("$.status").value("PENDING"));
+
+        // Start one task - order should be IN_PREPARATION
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(0).getId() + "/start"))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("IN_PREPARATION"));
+
+        // Complete first task, start and complete second - still IN_PREPARATION because third is pending
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(0).getId() + "/complete"))
+            .andExpect(status().isOk());
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(1).getId() + "/start"))
+            .andExpect(status().isOk());
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(1).getId() + "/complete"))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("PENDING"));  // Changed: with 1 pending, status is PENDING
+
+        // Start last task - order should be IN_PREPARATION
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(2).getId() + "/start"))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("IN_PREPARATION"));
+
+        // Complete last task - order should be COMPLETED
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(2).getId() + "/complete"))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("COMPLETED"));
     }
 }
