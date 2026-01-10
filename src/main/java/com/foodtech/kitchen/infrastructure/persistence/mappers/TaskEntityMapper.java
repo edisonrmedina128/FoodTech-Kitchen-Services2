@@ -1,65 +1,54 @@
 package com.foodtech.kitchen.infrastructure.persistence.mappers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.foodtech.kitchen.domain.model.Product;
 import com.foodtech.kitchen.domain.model.ProductType;
 import com.foodtech.kitchen.domain.model.Task;
 import com.foodtech.kitchen.infrastructure.persistence.jpa.entities.TaskEntity;
+import com.foodtech.kitchen.infrastructure.persistence.jpa.entities.TaskProductEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-//HUMAN REVIEW: Extraje la lógica de serialización/deserialización JSON a mapper dedicado.
-//Cumple SRP: TaskRepositoryAdapter solo adapta JPA, este mapper solo serializa/deserializa.
-//Elimina duplicación: ProductDto centralizado, evita duplicación con OrderEntityMapper.
+// ✅ Cumple SRP: Solo mapea entre dominio y entidades JPA
+// ✅ Elimina complejidad: No más ObjectMapper, try-catch, JSON, DTOs
 @Component
 public class TaskEntityMapper {
 
-    private final ObjectMapper objectMapper;
-
-    public TaskEntityMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
+    // ✅ NO más ObjectMapper - JPA maneja las relaciones
 
     public TaskEntity toEntity(Task task) {
-        try {
-            String tableNumber = "UNKNOWN";
-            
-            String productsJson = objectMapper.writeValueAsString(
-                task.getProducts().stream()
-                    .map(p -> new ProductDto(p.getName(), p.getType().name()))
-                    .collect(Collectors.toList())
-            );
+        List<TaskProductEntity> productEntities = task.getProducts().stream()
+                .map(this::toProductEntity)
+                .collect(Collectors.toList());
 
-            return TaskEntity.builder()
+        return TaskEntity.builder()
                 .station(task.getStation())
-                .tableNumber(tableNumber)
-                .productsJson(productsJson)
+                .tableNumber(task.getTableNumber())
+                .products(productEntities)
                 .build();
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting task to entity", e);
-        }
+    }
+
+    private TaskProductEntity toProductEntity(Product product) {
+        return TaskProductEntity.builder()
+                .name(product.getName())
+                .type(product.getType())
+                .build();
     }
 
     public Task toDomain(TaskEntity entity) {
-        try {
-            List<ProductDto> productDtos = objectMapper.readValue(
-                entity.getProductsJson(),
-                new TypeReference<List<ProductDto>>() {}
-            );
-
-            List<Product> products = productDtos.stream()
-                .map(dto -> new Product(dto.name(), ProductType.valueOf(dto.type())))
+        List<Product> products = entity.getProducts().stream()
+                .map(this::toProduct)
                 .collect(Collectors.toList());
 
-            return new Task(entity.getStation(), products);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting entity to task", e);
-        }
+        return new Task(
+                entity.getStation(),
+                entity.getTableNumber(),
+                products
+        );
     }
 
-    public record ProductDto(String name, String type) {}
+    private Product toProduct(TaskProductEntity entity) {
+        return new Product(entity.getName(), entity.getType());
+    }
 }

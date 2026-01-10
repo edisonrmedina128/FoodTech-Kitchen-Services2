@@ -12,13 +12,13 @@ import java.util.Map;
 //Cumple SRP: solo se encarga de construir objetos Task a partir de productos agrupados.
 public class TaskFactory {
 
-    public List<Task> createTasks(Map<Station, List<Product>> productsByStation) {
+    public List<Task> createTasks(String tableNumber, Map<Station, List<Product>> productsByStation) {
         List<Task> tasks = new ArrayList<>();
         
         for (Map.Entry<Station, List<Product>> entry : productsByStation.entrySet()) {
             Station station = entry.getKey();
             List<Product> products = entry.getValue();
-            tasks.add(new Task(station, products));
+            tasks.add(new Task(station, tableNumber, products));
         }
         
         return tasks;

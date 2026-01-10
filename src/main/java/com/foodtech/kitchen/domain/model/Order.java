@@ -8,13 +8,19 @@ public class Order {
     private final List<Product> products;
 
     public Order(String tableNumber, List<Product> products) {
-        // Validaciones
-        if (tableNumber == null || tableNumber.trim().isEmpty()) {
-            throw new IllegalArgumentException("Table number cannot be null or empty");
-        }
+        validate(tableNumber, products);
         
         this.tableNumber = tableNumber;
         this.products = new ArrayList<>(products);
+    }
+
+    private void validate(String tableNumber, List<Product> products) {
+        if (tableNumber == null || tableNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("Table number cannot be null or empty");
+        }
+        if (products == null || products.isEmpty()) {
+            throw new IllegalArgumentException("Products list cannot be null or empty");
+        }
     }
 
     public String getTableNumber() {

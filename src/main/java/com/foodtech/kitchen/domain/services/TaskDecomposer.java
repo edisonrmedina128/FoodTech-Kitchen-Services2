@@ -11,8 +11,7 @@ public class TaskDecomposer {
     private final OrderValidator orderValidator;
     private final TaskFactory taskFactory;
 
-    public TaskDecomposer(OrderValidator orderValidator,
-            TaskFactory taskFactory) {
+    public TaskDecomposer(OrderValidator orderValidator, TaskFactory taskFactory) {
         this.orderValidator = orderValidator;
         this.taskFactory = taskFactory;
     }
@@ -22,7 +21,8 @@ public class TaskDecomposer {
 
         Map<Station, List<Product>> productsByStation = groupProductsByStation(order);
 
-        return taskFactory.createTasks(productsByStation);
+        // ✅ CAMBIADO: pasar tableNumber del order al factory
+        return taskFactory.createTasks(order.getTableNumber(), productsByStation);
     }
 
     private Map<Station, List<Product>> groupProductsByStation(Order order) {

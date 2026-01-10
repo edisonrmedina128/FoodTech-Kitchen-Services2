@@ -1,41 +1,46 @@
 package com.foodtech.kitchen.infrastructure.persistence.mappers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.foodtech.kitchen.domain.model.Order;
+import com.foodtech.kitchen.domain.model.Product;
 import com.foodtech.kitchen.infrastructure.persistence.jpa.entities.OrderEntity;
+import com.foodtech.kitchen.infrastructure.persistence.jpa.entities.ProductEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
-//HUMAN REVIEW: Extraje la lógica de serialización JSON a mapper dedicado.
-//Cumple SRP: OrderRepositoryAdapter solo adapta JPA, este mapper solo serializa.
-//Elimina duplicación: ProductDto centralizado, reutilizable por otros mappers.
 @Component
 public class OrderEntityMapper {
 
-    private final ObjectMapper objectMapper;
-
-    public OrderEntityMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
-
+    // ✅ NO más ObjectMapper, NO más try-catch, NO más JSON
     public OrderEntity toEntity(Order order) {
-        try {
-            String productsJson = objectMapper.writeValueAsString(
-                order.getProducts().stream()
-                    .map(p -> new ProductDto(p.getName(), p.getType().name()))
-                    .collect(Collectors.toList())
-            );
+        List<ProductEntity> products = order.getProducts().stream()
+                .map(this::toProductEntity)
+                .collect(Collectors.toList());
 
-            return OrderEntity.builder()
+        return OrderEntity.builder()
                 .tableNumber(order.getTableNumber())
-                .productsJson(productsJson)
+                .products(products)
                 .build();
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting order to entity", e);
-        }
     }
 
-    public record ProductDto(String name, String type) {}
+    private ProductEntity toProductEntity(Product product) {
+        return ProductEntity.builder()
+                .name(product.getName())
+                .type(product.getType())
+                .build();
+    }
+
+    // Si necesitas mapear de vuelta a dominio
+    public Order toDomain(OrderEntity entity) {
+        List<Product> products = entity.getProducts().stream()
+                .map(this::toProduct)
+                .collect(Collectors.toList());
+
+        return new Order(entity.getTableNumber(), products);
+    }
+
+    private Product toProduct(ProductEntity entity) {
+        return new Product(entity.getName(), entity.getType());
+    }
 }

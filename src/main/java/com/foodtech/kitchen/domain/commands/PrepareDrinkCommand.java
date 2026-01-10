@@ -1,7 +1,7 @@
 package com.foodtech.kitchen.domain.commands;
 
 import com.foodtech.kitchen.domain.model.Product;
-import com.foodtech.kitchen.domain.model.Station;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +21,4 @@ public class PrepareDrinkCommand implements Command {
         }
     }
 
-    @Override
-    public Station getStation() {
-        return Station.BAR;
-    }
-
-    @Override
-    public List<Product> getProducts() {
-        return new ArrayList<>(products);
-    }
 }
