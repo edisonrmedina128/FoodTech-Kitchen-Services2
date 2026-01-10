@@ -68,19 +68,6 @@ class TaskControllerIntegrationTest {
     @DisplayName("Scenario 1: Should return only tasks for specified station")
     void shouldReturnOnlyTasksForSpecifiedStation() throws Exception {
         // When - el encargado de barra consulta sus tareas
-        var result = mockMvc.perform(get("/api/tasks/station/BAR"))
-            .andReturn();
-        
-        int status = result.getResponse().getStatus();
-        String content = result.getResponse().getContentAsString();
-        
-        System.out.println("Status: " + status);
-        System.out.println("Content: " + content);
-        
-        if (status != 200) {
-            throw new AssertionError("Expected 200 but was " + status + ". Content: " + content);
-        }
-        
         // Then - el sistema muestra únicamente tareas de barra (verifica filtrado)
         mockMvc.perform(get("/api/tasks/station/BAR"))
             .andExpect(status().isOk())
