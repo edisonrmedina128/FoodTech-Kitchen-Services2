@@ -88,4 +88,20 @@ class TaskControllerIntegrationTest {
             .andExpect(jsonPath("$").isArray())
             .andExpect(jsonPath("$").isEmpty());
     }
+
+    @Test
+    @DisplayName("Scenario 3: Should include complete task information with createdAt timestamp")
+    void shouldIncludeCompleteTaskInformationWithTimestamp() throws Exception {
+        // Given - tareas ya creadas en setUp
+        // When - el encargado consulta las tareas
+        // Then - el sistema muestra información completa incluyendo createdAt
+        mockMvc.perform(get("/api/tasks/station/BAR"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].tableNumber").exists())
+            .andExpect(jsonPath("$[0].station").value("BAR"))
+            .andExpect(jsonPath("$[0].products").isArray())
+            .andExpect(jsonPath("$[0].products[0].name").exists())
+            .andExpect(jsonPath("$[0].products[0].type").exists())
+            .andExpect(jsonPath("$[0].createdAt").exists());
+    }
 }
