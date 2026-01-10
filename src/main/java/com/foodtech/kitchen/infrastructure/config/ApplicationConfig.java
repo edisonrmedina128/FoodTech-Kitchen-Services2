@@ -1,12 +1,15 @@
 package com.foodtech.kitchen.infrastructure.config;
 
+import com.foodtech.kitchen.application.ports.in.GetTasksByStationPort;
 import com.foodtech.kitchen.application.ports.in.ProcessOrderPort;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
+import com.foodtech.kitchen.application.usecases.GetTasksByStationUseCase;
 import com.foodtech.kitchen.application.usecases.ProcessOrderUseCase;
 import com.foodtech.kitchen.domain.services.OrderValidator;
 import com.foodtech.kitchen.domain.services.TaskDecomposer;
 import com.foodtech.kitchen.domain.services.TaskFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,7 +22,9 @@ public class ApplicationConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
     }
 
     @Bean
@@ -51,5 +56,10 @@ public class ApplicationConfig {
         com.foodtech.kitchen.application.ports.out.CommandExecutor commandExecutor
     ) {
         return new ProcessOrderUseCase(taskDecomposer, taskRepository, commandFactory, commandExecutor);
+    }
+
+    @Bean
+    public GetTasksByStationPort getTasksByStationPort(TaskRepository taskRepository) {
+        return new GetTasksByStationUseCase(taskRepository);
     }
 }
