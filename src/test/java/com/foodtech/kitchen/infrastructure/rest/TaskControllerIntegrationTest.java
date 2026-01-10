@@ -160,4 +160,21 @@ class TaskControllerIntegrationTest {
             .andExpect(jsonPath("$.completedAt").exists())
             .andExpect(jsonPath("$.startedAt").exists());
     }
+
+    @Test
+    @DisplayName("HU-003 Scenario 3: Should return 400 when completing a pending task")
+    @org.springframework.transaction.annotation.Transactional
+    void shouldReturn400WhenCompletingPendingTask() throws Exception {
+        // Given - existe una tarea en estado PENDIENTE (sin iniciar)
+        List<Task> allTasks = taskRepository.findAll();
+        Long taskId = allTasks.get(0).getId();
+
+        // When - se intenta marcar la tarea como completada sin iniciarla primero
+        // Then - el sistema rechaza la operación con 400
+        mockMvc.perform(patch("/api/tasks/" + taskId + "/complete"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value("Task must be in IN_PREPARATION status to complete"))
+            .andExpect(jsonPath("$.message").value("Invalid state transition"))
+            .andExpect(jsonPath("$.status").value(400));
+    }
 }
