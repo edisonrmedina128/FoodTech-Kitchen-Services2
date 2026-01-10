@@ -21,8 +21,7 @@ public class TaskDecomposer {
 
         Map<Station, List<Product>> productsByStation = groupProductsByStation(order);
 
-        // ✅ CAMBIADO: pasar tableNumber del order al factory
-        return taskFactory.createTasks(order.getTableNumber(), productsByStation);
+        return taskFactory.createTasks(order.getId(), order.getTableNumber(), productsByStation);
     }
 
     private Map<Station, List<Product>> groupProductsByStation(Order order) {

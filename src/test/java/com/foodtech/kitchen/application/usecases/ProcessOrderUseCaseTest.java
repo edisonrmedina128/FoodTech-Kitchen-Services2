@@ -40,7 +40,7 @@ class ProcessOrderUseCaseTest {
     void shouldProcessOrderAndSaveTasks() {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
-        Order order = new Order("A1", List.of(cocaCola));
+        Order order = new Order(null, "A1", List.of(cocaCola));
 
         // When
         List<Task> tasks = useCase.execute(order);
@@ -57,7 +57,7 @@ class ProcessOrderUseCaseTest {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
         Product pizza = new Product("Pizza", ProductType.HOT_DISH);
-        Order order = new Order("B2", List.of(cocaCola, pizza));
+        Order order = new Order(null, "B2", List.of(cocaCola, pizza));
 
         // When
         List<Task> tasks = useCase.execute(order);
@@ -73,7 +73,7 @@ class ProcessOrderUseCaseTest {
         // When & Then - la validación ya se lanza al crear el Order
         assertThrows(
             IllegalArgumentException.class,
-            () -> useCase.execute(new Order("C3", List.of()))
+            () -> useCase.execute(new Order(null, "C3", List.of()))
         );
         verify(taskRepository, never()).saveAll(anyList());
     }

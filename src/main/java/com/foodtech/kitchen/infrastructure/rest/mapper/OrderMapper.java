@@ -19,7 +19,7 @@ public class OrderMapper {
             .map(ProductMapper::mapProduct)
             .collect(Collectors.toList());
         
-        return new Order(request.tableNumber(), products);
+        return new Order(null, request.tableNumber(), products);
     }
 
 }

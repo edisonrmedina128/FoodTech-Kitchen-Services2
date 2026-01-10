@@ -34,7 +34,7 @@ class OrderRepositoryAdapterTest {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
         Product pizza = new Product("Pizza", ProductType.HOT_DISH);
-        Order order = new Order("A1", List.of(cocaCola, pizza));
+        Order order = new Order(null, "A1", List.of(cocaCola, pizza));
 
         com.foodtech.kitchen.infrastructure.persistence.jpa.entities.ProductEntity p1 =
             com.foodtech.kitchen.infrastructure.persistence.jpa.entities.ProductEntity.builder()
@@ -63,7 +63,7 @@ class OrderRepositoryAdapterTest {
     void shouldConvertOrderToEntity() {
         // Given
         Product product = new Product("Coca Cola", ProductType.DRINK);
-        Order order = new Order("B2", List.of(product));
+        Order order = new Order(null, "B2", List.of(product));
 
         OrderEntity capturedEntity = OrderEntity.builder().build();
         
@@ -90,7 +90,7 @@ class OrderRepositoryAdapterTest {
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
         Product sprite = new Product("Sprite", ProductType.DRINK);
         Product pizza = new Product("Pizza", ProductType.HOT_DISH);
-        Order order = new Order("C3", List.of(cocaCola, sprite, pizza));
+        Order order = new Order(null, "C3", List.of(cocaCola, sprite, pizza));
 
         // When
         adapter.save(order);

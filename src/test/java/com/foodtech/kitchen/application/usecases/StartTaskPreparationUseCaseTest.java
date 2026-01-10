@@ -3,7 +3,9 @@ package com.foodtech.kitchen.application.usecases;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
 import com.foodtech.kitchen.domain.model.Station;
 import com.foodtech.kitchen.domain.model.Product;
+import com.foodtech.kitchen.domain.model.ProductType;
 import com.foodtech.kitchen.domain.model.Task;
+import com.foodtech.kitchen.domain.model.TaskStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +37,7 @@ class StartTaskPreparationUseCaseTest {
     void shouldStartTaskPreparationWhenTaskExists() {
         // Given
         Long taskId = 1L;
-        Product product = new Product("Cerveza", "Bebida", 5000);
+        Product product = new Product("Cerveza", ProductType.DRINK);
         Task pendingTask = new Task(
                 taskId,
                 1L,

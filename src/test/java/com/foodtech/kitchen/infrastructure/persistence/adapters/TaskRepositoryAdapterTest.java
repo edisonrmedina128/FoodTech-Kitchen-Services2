@@ -33,7 +33,7 @@ class TaskRepositoryAdapterTest {
     void shouldSaveTasks() {
         // Given
         Product product = new Product("Coca Cola", ProductType.DRINK);
-        Task task = new Task(Station.BAR, "A1", List.of(product), LocalDateTime.now());
+        Task task = new Task(null, 1L, Station.BAR, "A1", List.of(product), LocalDateTime.now());
 
         // When
         adapter.saveAll(List.of(task));
@@ -51,6 +51,8 @@ class TaskRepositoryAdapterTest {
                 .name("Coca Cola").type(ProductType.DRINK).build();
 
         TaskEntity entity = TaskEntity.builder()
+            .id(1L)
+            .orderId(1L)
             .station(Station.BAR)
             .tableNumber("A1")
             .products(List.of(p))
@@ -78,6 +80,8 @@ class TaskRepositoryAdapterTest {
                 .name("Coca Cola").type(ProductType.DRINK).build();
 
         TaskEntity entity = TaskEntity.builder()
+            .id(1L)
+            .orderId(1L)
             .station(Station.BAR)
             .tableNumber("A1")
             .products(List.of(p))
