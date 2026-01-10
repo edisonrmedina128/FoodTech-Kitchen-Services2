@@ -12,4 +12,5 @@ import java.util.List;
 public interface TaskJpaRepository extends JpaRepository<TaskEntity, Long> {
     List<TaskEntity> findByStation(Station station);
     List<TaskEntity> findByStationAndStatus(Station station, TaskStatus status);
+    List<TaskEntity> findByOrderId(Long orderId);
 }

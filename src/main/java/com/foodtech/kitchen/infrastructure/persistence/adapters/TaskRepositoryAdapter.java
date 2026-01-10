@@ -61,6 +61,13 @@ public class TaskRepositoryAdapter implements TaskRepository {
     }
 
     @Override
+    public List<Task> findByOrderId(Long orderId) {
+        return jpaRepository.findByOrderId(orderId).stream()
+            .map(mapper::toDomain)
+            .collect(Collectors.toList());
+    }
+
+    @Override
     public List<Task> findAll() {
         return jpaRepository.findAll().stream()
             .map(mapper::toDomain)

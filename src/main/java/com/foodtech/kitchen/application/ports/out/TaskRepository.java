@@ -13,5 +13,6 @@ public interface TaskRepository {
     Optional<Task> findById(Long id);
     List<Task> findByStation(Station station);
     List<Task> findByStationAndStatus(Station station, TaskStatus status);
+    List<Task> findByOrderId(Long orderId);
     List<Task> findAll();
 }

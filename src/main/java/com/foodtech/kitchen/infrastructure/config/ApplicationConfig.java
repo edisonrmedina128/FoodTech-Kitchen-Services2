@@ -72,4 +72,9 @@ public class ApplicationConfig {
     public com.foodtech.kitchen.application.ports.in.CompleteTaskPreparationPort completeTaskPreparationPort(TaskRepository taskRepository) {
         return new com.foodtech.kitchen.application.usecases.CompleteTaskPreparationUseCase(taskRepository);
     }
+
+    @Bean
+    public com.foodtech.kitchen.application.ports.in.GetOrderStatusPort getOrderStatusPort(TaskRepository taskRepository) {
+        return new com.foodtech.kitchen.application.usecases.GetOrderStatusUseCase(taskRepository);
+    }
 }
