@@ -61,4 +61,31 @@ class CompleteTaskPreparationUseCaseTest {
         verify(taskRepository).findById(taskId);
         verify(taskRepository).save(any(Task.class));
     }
+
+    @Test
+    void shouldThrowExceptionWhenCompletingPendingTask() {
+        // Given
+        Long taskId = 1L;
+        Product product = new Product("Cerveza", ProductType.DRINK);
+        Task pendingTask = new Task(
+                taskId,
+                1L,
+                Station.BAR,
+                "A1",
+                List.of(product),
+                LocalDateTime.now()
+        );
+        // Task is PENDING, not started
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(pendingTask));
+
+        // When & Then
+        IllegalStateException exception = assertThrows(
+            IllegalStateException.class,
+            () -> useCase.execute(taskId)
+        );
+        assertEquals("Task must be in IN_PREPARATION status to complete", exception.getMessage());
+        verify(taskRepository).findById(taskId);
+        verify(taskRepository, never()).save(any(Task.class));
+    }
 }
