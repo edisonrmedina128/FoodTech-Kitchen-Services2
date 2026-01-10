@@ -1,7 +1,9 @@
 package com.foodtech.kitchen.infrastructure.config;
 
+import com.foodtech.kitchen.application.ports.in.GetTasksByStationPort;
 import com.foodtech.kitchen.application.ports.in.ProcessOrderPort;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
+import com.foodtech.kitchen.application.usecases.GetTasksByStationUseCase;
 import com.foodtech.kitchen.application.usecases.ProcessOrderUseCase;
 import com.foodtech.kitchen.domain.services.OrderValidator;
 import com.foodtech.kitchen.domain.services.TaskDecomposer;
@@ -51,5 +53,10 @@ public class ApplicationConfig {
         com.foodtech.kitchen.application.ports.out.CommandExecutor commandExecutor
     ) {
         return new ProcessOrderUseCase(taskDecomposer, taskRepository, commandFactory, commandExecutor);
+    }
+
+    @Bean
+    public GetTasksByStationPort getTasksByStationPort(TaskRepository taskRepository) {
+        return new GetTasksByStationUseCase(taskRepository);
     }
 }
