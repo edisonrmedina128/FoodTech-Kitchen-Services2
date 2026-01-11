@@ -1,6 +1,9 @@
 package com.foodtech.kitchen.infrastructure.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.foodtech.kitchen.application.ports.out.TaskRepository;
+import com.foodtech.kitchen.domain.model.Station;
+import com.foodtech.kitchen.domain.model.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -25,6 +30,9 @@ class TaskControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private TaskRepository taskRepository;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -117,5 +125,165 @@ class TaskControllerIntegrationTest {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.error").exists())
             .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    @DisplayName("HU-003 Scenario 1: Should start task preparation and update status")
+    @org.springframework.transaction.annotation.Transactional
+    void shouldStartTaskPreparation() throws Exception {
+        // Given - existe una tarea pendiente con ID
+        List<Task> allTasks = taskRepository.findAll();
+        Long taskId = allTasks.get(0).getId();
+
+        // When - el cocinero inicia la preparación de la tarea
+        mockMvc.perform(patch("/api/tasks/" + taskId + "/start"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(taskId))
+            .andExpect(jsonPath("$.status").value("IN_PREPARATION"))
+            .andExpect(jsonPath("$.startedAt").exists());
+    }
+
+    @Test
+    @DisplayName("HU-003 Scenario 2: Should complete task preparation and calculate duration")
+    @org.springframework.transaction.annotation.Transactional
+    void shouldCompleteTaskPreparation() throws Exception {
+        // Given - existe una tarea en estado EN_PREPARACION
+        List<Task> allTasks = taskRepository.findAll();
+        Long taskId = allTasks.get(0).getId();
+        
+        // Start the task first
+        mockMvc.perform(patch("/api/tasks/" + taskId + "/start"))
+            .andExpect(status().isOk());
+
+        // When - el cocinero marca la tarea como completada
+        mockMvc.perform(patch("/api/tasks/" + taskId + "/complete"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(taskId))
+            .andExpect(jsonPath("$.status").value("COMPLETED"))
+            .andExpect(jsonPath("$.completedAt").exists())
+            .andExpect(jsonPath("$.startedAt").exists());
+    }
+
+    @Test
+    @DisplayName("HU-003 Scenario 3: Should return 400 when completing a pending task")
+    @org.springframework.transaction.annotation.Transactional
+    void shouldReturn400WhenCompletingPendingTask() throws Exception {
+        // Given - existe una tarea en estado PENDIENTE (sin iniciar)
+        List<Task> allTasks = taskRepository.findAll();
+        Long taskId = allTasks.get(0).getId();
+
+        // When - se intenta marcar la tarea como completada sin iniciarla primero
+        // Then - el sistema rechaza la operación con 400
+        mockMvc.perform(patch("/api/tasks/" + taskId + "/complete"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value("Task must be in IN_PREPARATION status to complete"))
+            .andExpect(jsonPath("$.message").value("Invalid state transition"))
+            .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    @DisplayName("HU-003 Scenario 4: Should return only completed tasks when filtering by status")
+    @org.springframework.transaction.annotation.Transactional
+    void shouldReturnOnlyCompletedTasksForStation() throws Exception {
+        // Given - la estación de barra tiene tareas en diferentes estados
+        List<Task> barTasks = taskRepository.findByStation(Station.BAR);
+        
+        // Create 2 completed tasks, 1 in preparation, and 1 pending
+        Task task1 = barTasks.get(0);
+        Task task2 = barTasks.get(1);
+        
+        // Complete task1: start and complete
+        mockMvc.perform(patch("/api/tasks/" + task1.getId() + "/start"))
+            .andExpect(status().isOk());
+        mockMvc.perform(patch("/api/tasks/" + task1.getId() + "/complete"))
+            .andExpect(status().isOk());
+        
+        // Complete task2: start and complete
+        mockMvc.perform(patch("/api/tasks/" + task2.getId() + "/start"))
+            .andExpect(status().isOk());
+        mockMvc.perform(patch("/api/tasks/" + task2.getId() + "/complete"))
+            .andExpect(status().isOk());
+
+        // When - se consulta el historial de tareas completadas de barra
+        mockMvc.perform(get("/api/tasks/station/BAR?status=COMPLETED"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].status").value("COMPLETED"))
+            .andExpect(jsonPath("$[0].startedAt").exists())
+            .andExpect(jsonPath("$[0].completedAt").exists())
+            .andExpect(jsonPath("$[1].status").value("COMPLETED"))
+            .andExpect(jsonPath("$[1].startedAt").exists())
+            .andExpect(jsonPath("$[1].completedAt").exists());
+    }
+
+    @Test
+    @DisplayName("HU-003 Scenario 5: Should return order status based on task states")
+    @org.springframework.transaction.annotation.Transactional
+    void shouldReturnOrderStatusBasedOnTaskStates() throws Exception {
+        // Given - crear un pedido con múltiples productos que generen 3 tareas (diferentes estaciones)
+        String orderRequest = objectMapper.writeValueAsString(Map.of(
+            "products", List.of(
+                Map.of("name", "Coca Cola", "type", "DRINK"),
+                Map.of("name", "Sprite", "type", "DRINK"),  // Same station as Coca Cola
+                Map.of("name", "Pizza", "type", "HOT_DISH"),
+                Map.of("name", "Ensalada", "type", "COLD_DISH")
+            ),
+            "tableNumber", "A1"
+        ));
+
+        mockMvc.perform(post("/api/orders")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(orderRequest))
+            .andExpect(status().isCreated());
+
+        // Get the order ID from the created tasks
+        List<Task> allTasks = taskRepository.findAll();
+        Long orderId = allTasks.get(allTasks.size() - 1).getOrderId();
+        List<Task> orderTasks = taskRepository.findByOrderId(orderId);
+        
+        // Should have created 3 tasks (BAR, HOT_KITCHEN, COLD_KITCHEN)
+        assertEquals(3, orderTasks.size());
+        
+        // Initially all tasks are PENDING
+        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.orderId").value(orderId.toString()))
+            .andExpect(jsonPath("$.status").value("PENDING"));
+
+        // Start one task - order should be IN_PREPARATION
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(0).getId() + "/start"))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("IN_PREPARATION"));
+
+        // Complete first task, start and complete second - still IN_PREPARATION because third is pending
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(0).getId() + "/complete"))
+            .andExpect(status().isOk());
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(1).getId() + "/start"))
+            .andExpect(status().isOk());
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(1).getId() + "/complete"))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("PENDING"));  // Changed: with 1 pending, status is PENDING
+
+        // Start last task - order should be IN_PREPARATION
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(2).getId() + "/start"))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("IN_PREPARATION"));
+
+        // Complete last task - order should be COMPLETED
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(2).getId() + "/complete"))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("COMPLETED"));
     }
 }

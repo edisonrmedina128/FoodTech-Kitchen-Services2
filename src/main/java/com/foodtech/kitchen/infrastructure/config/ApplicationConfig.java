@@ -62,4 +62,19 @@ public class ApplicationConfig {
     public GetTasksByStationPort getTasksByStationPort(TaskRepository taskRepository) {
         return new GetTasksByStationUseCase(taskRepository);
     }
+
+    @Bean
+    public com.foodtech.kitchen.application.ports.in.StartTaskPreparationPort startTaskPreparationPort(TaskRepository taskRepository) {
+        return new com.foodtech.kitchen.application.usecases.StartTaskPreparationUseCase(taskRepository);
+    }
+
+    @Bean
+    public com.foodtech.kitchen.application.ports.in.CompleteTaskPreparationPort completeTaskPreparationPort(TaskRepository taskRepository) {
+        return new com.foodtech.kitchen.application.usecases.CompleteTaskPreparationUseCase(taskRepository);
+    }
+
+    @Bean
+    public com.foodtech.kitchen.application.ports.in.GetOrderStatusPort getOrderStatusPort(TaskRepository taskRepository) {
+        return new com.foodtech.kitchen.application.usecases.GetOrderStatusUseCase(taskRepository);
+    }
 }

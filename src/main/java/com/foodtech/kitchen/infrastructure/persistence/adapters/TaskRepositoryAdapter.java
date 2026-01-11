@@ -34,8 +34,35 @@ public class TaskRepositoryAdapter implements TaskRepository {
     }
 
     @Override
+    public Task save(Task task) {
+        TaskEntity entity = mapper.toEntity(task);
+        TaskEntity saved = jpaRepository.save(entity);
+        return mapper.toDomain(saved);
+    }
+
+    @Override
+    public java.util.Optional<Task> findById(Long id) {
+        return jpaRepository.findById(id)
+            .map(mapper::toDomain);
+    }
+
+    @Override
     public List<Task> findByStation(Station station) {
         return jpaRepository.findByStation(station).stream()
+            .map(mapper::toDomain)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Task> findByStationAndStatus(Station station, TaskStatus status) {
+        return jpaRepository.findByStationAndStatus(station, status).stream()
+            .map(mapper::toDomain)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Task> findByOrderId(Long orderId) {
+        return jpaRepository.findByOrderId(orderId).stream()
             .map(mapper::toDomain)
             .collect(Collectors.toList());
     }

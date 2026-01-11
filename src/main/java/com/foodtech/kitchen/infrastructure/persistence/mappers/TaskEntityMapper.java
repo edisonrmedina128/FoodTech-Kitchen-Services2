@@ -26,10 +26,15 @@ public class TaskEntityMapper {
                 .collect(Collectors.toList());
 
         return TaskEntity.builder()
+                .id(task.getId())
+                .orderId(task.getOrderId())
                 .station(task.getStation())
                 .tableNumber(task.getTableNumber())
                 .products(productEntities)
                 .createdAt(task.getCreatedAt())
+                .status(task.getStatus())
+                .startedAt(task.getStartedAt())
+                .completedAt(task.getCompletedAt())
                 .build();
     }
 
@@ -38,11 +43,16 @@ public class TaskEntityMapper {
                 .map(productEntityMapper::toDomain)
                 .collect(Collectors.toList());
 
-        return new Task(
+        return Task.reconstruct(
+                entity.getId(),
+                entity.getOrderId(),
                 entity.getStation(),
                 entity.getTableNumber(),
                 products,
-                entity.getCreatedAt()
+                entity.getCreatedAt(),
+                entity.getStatus(),
+                entity.getStartedAt(),
+                entity.getCompletedAt()
         );
     }
 }

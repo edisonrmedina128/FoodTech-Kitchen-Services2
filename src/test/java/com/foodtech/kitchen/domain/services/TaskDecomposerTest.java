@@ -28,7 +28,7 @@ class TaskDecomposerTest {
     void shouldCreateOneTaskForSingleDrink() {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
-        Order order = new Order("A1", List.of(cocaCola));
+        Order order = new Order(null, "A1", List.of(cocaCola));
 
         // When
         List<Task> tasks = decomposer.decompose(order);
@@ -44,7 +44,7 @@ class TaskDecomposerTest {
     void shouldCreateOneTaskForSingleHotDish() {
         // Given
         Product pizza = new Product("Pizza Margarita", ProductType.HOT_DISH);
-        Order order = new Order("B2", List.of(pizza));
+        Order order = new Order(null, "B2", List.of(pizza));
 
         // When
         List<Task> tasks = decomposer.decompose(order);
@@ -59,7 +59,7 @@ class TaskDecomposerTest {
     void shouldCreateOneTaskForSingleColdDish() {
         // Given
         Product salad = new Product("Caesar Salad", ProductType.COLD_DISH);
-        Order order = new Order("C3", List.of(salad));
+        Order order = new Order(null, "C3", List.of(salad));
 
         // When
         List<Task> tasks = decomposer.decompose(order);
@@ -75,7 +75,7 @@ class TaskDecomposerTest {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
         Product pizza = new Product("Pizza", ProductType.HOT_DISH);
-        Order order = new Order("D4", List.of(cocaCola, pizza));
+        Order order = new Order(null, "D4", List.of(cocaCola, pizza));
 
         // When
         List<Task> tasks = decomposer.decompose(order);
@@ -98,7 +98,7 @@ class TaskDecomposerTest {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
         Product sprite = new Product("Sprite", ProductType.DRINK);
-        Order order = new Order("E5", List.of(cocaCola, sprite));
+        Order order = new Order(null, "E5", List.of(cocaCola, sprite));
 
         // When
         List<Task> tasks = decomposer.decompose(order);
@@ -115,7 +115,7 @@ class TaskDecomposerTest {
         // When & Then - la validación ahora ocurre en el constructor de Order
         assertThrows(
             IllegalArgumentException.class,
-            () -> new Order("F6", List.of()),
+            () -> new Order(null, "F6", List.of()),
             "Debe lanzar excepción para pedido vacío");
     }
 
@@ -138,7 +138,7 @@ class TaskDecomposerTest {
         // When & Then
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new Order(null, List.of(product)),
+                () -> new Order(null, null, List.of(product)),
                 "Debe lanzar excepción para número de mesa nulo");
     }
 
@@ -149,7 +149,7 @@ class TaskDecomposerTest {
         Product drink = new Product("Coca Cola", ProductType.DRINK);
         Product hotDish = new Product("Pizza", ProductType.HOT_DISH);
         Product coldDish = new Product("Caesar Salad", ProductType.COLD_DISH);
-        Order order = new Order("G7", List.of(drink, hotDish, coldDish));
+        Order order = new Order(null, "G7", List.of(drink, hotDish, coldDish));
 
         // When
         List<Task> tasks = decomposer.decompose(order);
@@ -178,7 +178,7 @@ class TaskDecomposerTest {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
         Product pizza = new Product("Pizza", ProductType.HOT_DISH);
-        Order order = new Order("H8", List.of(cocaCola, pizza));
+        Order order = new Order(null, "H8", List.of(cocaCola, pizza));
 
         CommandFactory commandFactory = new CommandFactory();
 

@@ -28,6 +28,7 @@ class TaskJpaRepositoryTest {
                 .name("Coca Cola").type(com.foodtech.kitchen.domain.model.ProductType.DRINK).build();
 
         TaskEntity task = TaskEntity.builder()
+            .orderId(1L)
             .station(Station.BAR)
             .tableNumber("A1")
             .products(List.of(p))
@@ -48,12 +49,14 @@ class TaskJpaRepositoryTest {
     void shouldFindTasksByStation() {
         // Given
         TaskEntity barTask = TaskEntity.builder()
+            .orderId(1L)
             .station(Station.BAR)
             .tableNumber("A1")
             .products(List.of())
             .build();
         
         TaskEntity kitchenTask = TaskEntity.builder()
+            .orderId(1L)
             .station(Station.HOT_KITCHEN)
             .tableNumber("B2")
             .products(List.of())

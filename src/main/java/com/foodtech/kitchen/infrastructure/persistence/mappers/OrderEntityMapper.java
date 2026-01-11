@@ -24,6 +24,7 @@ public class OrderEntityMapper {
                 .collect(Collectors.toList());
 
         return OrderEntity.builder()
+                .id(order.getId())
                 .tableNumber(order.getTableNumber())
                 .products(products)
                 .build();
@@ -34,6 +35,6 @@ public class OrderEntityMapper {
                 .map(productEntityMapper::toDomain)
                 .collect(Collectors.toList());
 
-        return new Order(entity.getTableNumber(), products);
+        return new Order(entity.getId(), entity.getTableNumber(), products);
     }
 }

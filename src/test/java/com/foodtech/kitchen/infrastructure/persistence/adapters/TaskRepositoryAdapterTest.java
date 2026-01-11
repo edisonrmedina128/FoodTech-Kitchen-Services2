@@ -33,7 +33,7 @@ class TaskRepositoryAdapterTest {
     void shouldSaveTasks() {
         // Given
         Product product = new Product("Coca Cola", ProductType.DRINK);
-        Task task = new Task(Station.BAR, "A1", List.of(product), LocalDateTime.now());
+        Task task = new Task(null, 1L, Station.BAR, "A1", List.of(product), LocalDateTime.now());
 
         // When
         adapter.saveAll(List.of(task));
@@ -51,6 +51,8 @@ class TaskRepositoryAdapterTest {
                 .name("Coca Cola").type(ProductType.DRINK).build();
 
         TaskEntity entity = TaskEntity.builder()
+            .id(1L)
+            .orderId(1L)
             .station(Station.BAR)
             .tableNumber("A1")
             .products(List.of(p))
@@ -78,6 +80,8 @@ class TaskRepositoryAdapterTest {
                 .name("Coca Cola").type(ProductType.DRINK).build();
 
         TaskEntity entity = TaskEntity.builder()
+            .id(1L)
+            .orderId(1L)
             .station(Station.BAR)
             .tableNumber("A1")
             .products(List.of(p))
@@ -92,5 +96,38 @@ class TaskRepositoryAdapterTest {
         // Then
         assertEquals(1, tasks.size());
         verify(jpaRepository, times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("Should find tasks by station and status")
+    void shouldFindTasksByStationAndStatus() {
+        // Given
+        com.foodtech.kitchen.infrastructure.persistence.jpa.entities.TaskProductEntity p =
+            com.foodtech.kitchen.infrastructure.persistence.jpa.entities.TaskProductEntity.builder()
+                .name("Coca Cola").type(ProductType.DRINK).build();
+
+        TaskEntity completedEntity = TaskEntity.builder()
+            .id(1L)
+            .orderId(1L)
+            .station(Station.BAR)
+            .tableNumber("A1")
+            .products(List.of(p))
+            .status(TaskStatus.COMPLETED)
+            .createdAt(LocalDateTime.now())
+            .startedAt(LocalDateTime.now())
+            .completedAt(LocalDateTime.now())
+            .build();
+        
+        when(jpaRepository.findByStationAndStatus(Station.BAR, TaskStatus.COMPLETED))
+            .thenReturn(List.of(completedEntity));
+
+        // When
+        List<Task> tasks = adapter.findByStationAndStatus(Station.BAR, TaskStatus.COMPLETED);
+
+        // Then
+        assertEquals(1, tasks.size());
+        assertEquals(Station.BAR, tasks.get(0).getStation());
+        assertEquals(TaskStatus.COMPLETED, tasks.get(0).getStatus());
+        verify(jpaRepository, times(1)).findByStationAndStatus(Station.BAR, TaskStatus.COMPLETED);
     }
 }
