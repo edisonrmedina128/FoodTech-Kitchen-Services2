@@ -8,6 +8,7 @@ import com.foodtech.kitchen.infrastructure.persistence.mappers.TaskEntityMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 //HUMAN REVIEW: Simplifiqué adapter inyectando TaskEntityMapper dedicado.
@@ -41,7 +42,7 @@ public class TaskRepositoryAdapter implements TaskRepository {
     }
 
     @Override
-    public java.util.Optional<Task> findById(Long id) {
+    public Optional<Task> findById(Long id) {
         return jpaRepository.findById(id)
             .map(mapper::toDomain);
     }

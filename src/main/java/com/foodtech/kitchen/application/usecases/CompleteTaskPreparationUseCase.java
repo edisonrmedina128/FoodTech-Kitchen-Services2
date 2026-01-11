@@ -1,5 +1,6 @@
 package com.foodtech.kitchen.application.usecases;
 
+import com.foodtech.kitchen.application.exepcions.TaskNotFoundException;
 import com.foodtech.kitchen.application.ports.in.CompleteTaskPreparationPort;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
 import com.foodtech.kitchen.domain.model.Task;
@@ -15,7 +16,7 @@ public class CompleteTaskPreparationUseCase implements CompleteTaskPreparationPo
     @Override
     public Task execute(Long taskId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new IllegalArgumentException("Task not found with id: " + taskId));
+                .orElseThrow(() -> new TaskNotFoundException(taskId));
         
         task.complete();
         

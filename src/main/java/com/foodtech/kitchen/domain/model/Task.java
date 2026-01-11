@@ -15,8 +15,25 @@ public class Task {
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
 
-    public Task(Long id, Long orderId, Station station, String tableNumber, List<Product> products, LocalDateTime createdAt) {
-        validate(id, orderId, station, tableNumber, products, createdAt);
+    // Constructor público para CREAR nuevas tasks (sin ID)
+    public Task(Long orderId, Station station, String tableNumber,
+                List<Product> products, LocalDateTime createdAt) {
+        validate(orderId, station, tableNumber, products, createdAt);
+        this.id = null;
+        this.orderId = orderId;
+        this.station = station;
+        this.tableNumber = tableNumber;
+        this.products = new ArrayList<>(products);
+        this.createdAt = createdAt;
+        this.status = TaskStatus.PENDING;
+        this.startedAt = null;
+        this.completedAt = null;
+    }
+
+    // Constructor PRIVADO con ID (para reconstrucción)
+    private Task(Long id, Long orderId, Station station, String tableNumber,
+                 List<Product> products, LocalDateTime createdAt) {
+        validate(orderId, station, tableNumber, products, createdAt);
         this.id = id;
         this.orderId = orderId;
         this.station = station;
@@ -28,8 +45,27 @@ public class Task {
         this.completedAt = null;
     }
 
-    private void validate(Long id, Long orderId, Station station, String tableNumber, List<Product> products, LocalDateTime createdAt) {
-        // id can be null for new tasks (not yet persisted)
+
+    public static Task reconstruct(Long id, Long orderId, Station station, String tableNumber,
+                                   List<Product> products, LocalDateTime createdAt,
+                                   TaskStatus status, LocalDateTime startedAt,
+                                   LocalDateTime completedAt) {
+        validateId(id);
+        Task task = new Task(id, orderId, station, tableNumber, products, createdAt);
+        task.status = status;
+        task.startedAt = startedAt;
+        task.completedAt = completedAt;
+        return task;
+    }
+
+    private static void validateId(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID cannot be null when reconstructing Task");
+        }
+    }
+
+    private void validate( Long orderId, Station station, String tableNumber, List<Product> products, LocalDateTime createdAt) {
+
         if (orderId == null) {
             throw new IllegalArgumentException("Order ID cannot be null");
         }
@@ -63,16 +99,6 @@ public class Task {
         this.completedAt = LocalDateTime.now();
     }
 
-    // Factory method for reconstructing Task from persistence
-    public static Task reconstruct(Long id, Long orderId, Station station, String tableNumber, 
-                                   List<Product> products, LocalDateTime createdAt, 
-                                   TaskStatus status, LocalDateTime startedAt, LocalDateTime completedAt) {
-        Task task = new Task(id, orderId, station, tableNumber, products, createdAt);
-        task.status = status;
-        task.startedAt = startedAt;
-        task.completedAt = completedAt;
-        return task;
-    }
 
     public Long getId() {
         return id;

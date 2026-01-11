@@ -1,10 +1,13 @@
 package com.foodtech.kitchen.infrastructure.config;
 
+import com.foodtech.kitchen.application.ports.in.GetOrderStatusPort;
 import com.foodtech.kitchen.application.ports.in.GetTasksByStationPort;
 import com.foodtech.kitchen.application.ports.in.ProcessOrderPort;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
+import com.foodtech.kitchen.application.usecases.GetOrderStatusUseCase;
 import com.foodtech.kitchen.application.usecases.GetTasksByStationUseCase;
 import com.foodtech.kitchen.application.usecases.ProcessOrderUseCase;
+import com.foodtech.kitchen.domain.services.OrderStatusCalculator;
 import com.foodtech.kitchen.domain.services.OrderValidator;
 import com.foodtech.kitchen.domain.services.TaskDecomposer;
 import com.foodtech.kitchen.domain.services.TaskFactory;
@@ -69,12 +72,15 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public com.foodtech.kitchen.application.ports.in.CompleteTaskPreparationPort completeTaskPreparationPort(TaskRepository taskRepository) {
-        return new com.foodtech.kitchen.application.usecases.CompleteTaskPreparationUseCase(taskRepository);
+    public OrderStatusCalculator orderStatusCalculator() {
+        return new OrderStatusCalculator();
     }
 
     @Bean
-    public com.foodtech.kitchen.application.ports.in.GetOrderStatusPort getOrderStatusPort(TaskRepository taskRepository) {
-        return new com.foodtech.kitchen.application.usecases.GetOrderStatusUseCase(taskRepository);
+    public GetOrderStatusPort getOrderStatusPort(
+            TaskRepository taskRepository,
+            OrderStatusCalculator orderStatusCalculator
+    ) {
+        return new GetOrderStatusUseCase(taskRepository, orderStatusCalculator);
     }
 }
