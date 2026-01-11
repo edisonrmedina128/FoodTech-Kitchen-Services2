@@ -38,15 +38,17 @@ class CompleteTaskPreparationUseCaseTest {
         // Given
         Long taskId = 1L;
         Product product = new Product("Cerveza", ProductType.DRINK);
-        Task inPreparationTask = new Task(
+        Task inPreparationTask = Task.reconstruct(
                 taskId,
                 1L,
                 Station.BAR,
                 "A1",
                 List.of(product),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                TaskStatus.IN_PREPARATION,
+                LocalDateTime.now(),
+                null
         );
-        inPreparationTask.start(); // Set status to IN_PREPARATION
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(inPreparationTask));
         when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -67,13 +69,16 @@ class CompleteTaskPreparationUseCaseTest {
         // Given
         Long taskId = 1L;
         Product product = new Product("Cerveza", ProductType.DRINK);
-        Task pendingTask = new Task(
+        Task pendingTask = Task.reconstruct(
                 taskId,
                 1L,
                 Station.BAR,
                 "A1",
                 List.of(product),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                TaskStatus.PENDING,
+                null,
+                null
         );
         // Task is PENDING, not started
 

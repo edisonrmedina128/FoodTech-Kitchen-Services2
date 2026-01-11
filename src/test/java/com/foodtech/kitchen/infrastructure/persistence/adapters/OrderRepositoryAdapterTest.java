@@ -34,7 +34,7 @@ class OrderRepositoryAdapterTest {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
         Product pizza = new Product("Pizza", ProductType.HOT_DISH);
-        Order order = new Order(null, "A1", List.of(cocaCola, pizza));
+        Order order = new Order("A1", List.of(cocaCola, pizza));
 
         com.foodtech.kitchen.infrastructure.persistence.jpa.entities.ProductEntity p1 =
             com.foodtech.kitchen.infrastructure.persistence.jpa.entities.ProductEntity.builder()
@@ -63,23 +63,24 @@ class OrderRepositoryAdapterTest {
     void shouldConvertOrderToEntity() {
         // Given
         Product product = new Product("Coca Cola", ProductType.DRINK);
-        Order order = new Order(null, "B2", List.of(product));
-
-        OrderEntity capturedEntity = OrderEntity.builder().build();
+        Order order = new Order("B2", List.of(product));
         
-        when(jpaRepository.save(any(OrderEntity.class))).thenAnswer(invocation -> {
-            OrderEntity entity = invocation.getArgument(0);
-            assertEquals("B2", entity.getTableNumber());
-            assertNotNull(entity.getProducts());
-            assertTrue(entity.getProducts().stream().anyMatch(pe -> pe.getName().equals("Coca Cola")));
-            assertTrue(entity.getProducts().stream().anyMatch(pe -> pe.getType() == ProductType.DRINK));
-            return entity;
-        });
+        OrderEntity savedEntity = OrderEntity.builder()
+            .id(2L)
+            .tableNumber("B2")
+            .products(List.of(com.foodtech.kitchen.infrastructure.persistence.jpa.entities.ProductEntity.builder()
+                .name("Coca Cola").type(ProductType.DRINK).build()))
+            .build();
+        
+        when(jpaRepository.save(any(OrderEntity.class))).thenReturn(savedEntity);
 
         // When
-        adapter.save(order);
+        Order result = adapter.save(order);
 
         // Then
+        assertNotNull(result);
+        assertEquals(2L, result.getId());
+        assertEquals("B2", result.getTableNumber());
         verify(jpaRepository, times(1)).save(any(OrderEntity.class));
     }
 
@@ -90,17 +91,30 @@ class OrderRepositoryAdapterTest {
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
         Product sprite = new Product("Sprite", ProductType.DRINK);
         Product pizza = new Product("Pizza", ProductType.HOT_DISH);
-        Order order = new Order(null, "C3", List.of(cocaCola, sprite, pizza));
+        Order order = new Order("C3", List.of(cocaCola, sprite, pizza));
+
+        OrderEntity savedEntity = OrderEntity.builder()
+            .id(3L)
+            .tableNumber("C3")
+            .products(List.of(
+                com.foodtech.kitchen.infrastructure.persistence.jpa.entities.ProductEntity.builder()
+                    .name("Coca Cola").type(ProductType.DRINK).build(),
+                com.foodtech.kitchen.infrastructure.persistence.jpa.entities.ProductEntity.builder()
+                    .name("Sprite").type(ProductType.DRINK).build(),
+                com.foodtech.kitchen.infrastructure.persistence.jpa.entities.ProductEntity.builder()
+                    .name("Pizza").type(ProductType.HOT_DISH).build()))
+            .build();
+        
+        when(jpaRepository.save(any(OrderEntity.class))).thenReturn(savedEntity);
 
         // When
-        adapter.save(order);
+        Order result = adapter.save(order);
 
         // Then
-        verify(jpaRepository, times(1)).save(argThat(entity -> 
-            entity.getTableNumber().equals("C3") &&
-            entity.getProducts().stream().anyMatch(pe -> pe.getName().equals("Coca Cola")) &&
-            entity.getProducts().stream().anyMatch(pe -> pe.getName().equals("Sprite")) &&
-            entity.getProducts().stream().anyMatch(pe -> pe.getName().equals("Pizza"))
-        ));
+        assertNotNull(result);
+        assertEquals(3L, result.getId());
+        assertEquals("C3", result.getTableNumber());
+        assertEquals(3, result.getProducts().size());
+        verify(jpaRepository, times(1)).save(any(OrderEntity.class));
     }
 }

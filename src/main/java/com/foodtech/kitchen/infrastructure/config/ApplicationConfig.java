@@ -53,12 +53,13 @@ public class ApplicationConfig {
 
     @Bean
     public ProcessOrderPort processOrderPort(
+        com.foodtech.kitchen.application.ports.out.OrderRepository orderRepository,
         TaskDecomposer taskDecomposer, 
         TaskRepository taskRepository,
         com.foodtech.kitchen.domain.services.CommandFactory commandFactory,
         com.foodtech.kitchen.application.ports.out.CommandExecutor commandExecutor
     ) {
-        return new ProcessOrderUseCase(taskDecomposer, taskRepository, commandFactory, commandExecutor);
+        return new ProcessOrderUseCase(orderRepository, taskDecomposer, taskRepository, commandFactory, commandExecutor);
     }
 
     @Bean
@@ -69,6 +70,11 @@ public class ApplicationConfig {
     @Bean
     public com.foodtech.kitchen.application.ports.in.StartTaskPreparationPort startTaskPreparationPort(TaskRepository taskRepository) {
         return new com.foodtech.kitchen.application.usecases.StartTaskPreparationUseCase(taskRepository);
+    }
+
+    @Bean
+    public com.foodtech.kitchen.application.ports.in.CompleteTaskPreparationPort completeTaskPreparationPort(TaskRepository taskRepository) {
+        return new com.foodtech.kitchen.application.usecases.CompleteTaskPreparationUseCase(taskRepository);
     }
 
     @Bean

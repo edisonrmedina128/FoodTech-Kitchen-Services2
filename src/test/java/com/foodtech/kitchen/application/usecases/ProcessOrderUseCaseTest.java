@@ -1,7 +1,7 @@
 package com.foodtech.kitchen.application.usecases;
 
 import com.foodtech.kitchen.application.ports.out.CommandExecutor;
-import com.foodtech.kitchen.domain.commands.Command;
+import com.foodtech.kitchen.application.ports.out.OrderRepository;
 import com.foodtech.kitchen.domain.model.*;
 import com.foodtech.kitchen.domain.services.*;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
@@ -17,6 +17,7 @@ import static org.mockito.Mockito.*;
 class ProcessOrderUseCaseTest {
 
     private ProcessOrderUseCase useCase;
+    private OrderRepository orderRepository;
     private TaskRepository taskRepository;
     private TaskDecomposer taskDecomposer;
     private CommandFactory commandFactory;
@@ -24,6 +25,7 @@ class ProcessOrderUseCaseTest {
 
     @BeforeEach
     void setUp() {
+        orderRepository = mock(OrderRepository.class);
         taskRepository = mock(TaskRepository.class);
         commandFactory = new CommandFactory();
         commandExecutor = mock(CommandExecutor.class);
@@ -32,7 +34,7 @@ class ProcessOrderUseCaseTest {
         TaskFactory taskFactory = new TaskFactory();
         taskDecomposer = new TaskDecomposer(orderValidator, taskFactory);
         
-        useCase = new ProcessOrderUseCase(taskDecomposer, taskRepository, commandFactory, commandExecutor);
+        useCase = new ProcessOrderUseCase(orderRepository, taskDecomposer, taskRepository, commandFactory, commandExecutor);
     }
 
     @Test
@@ -40,13 +42,17 @@ class ProcessOrderUseCaseTest {
     void shouldProcessOrderAndSaveTasks() {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
-        Order order = new Order(null, "A1", List.of(cocaCola));
+        Order order = new Order("A1", List.of(cocaCola));
+        Order savedOrder = Order.reconstruct(1L, "A1", List.of(cocaCola));
+        
+        when(orderRepository.save(order)).thenReturn(savedOrder);
 
         // When
         List<Task> tasks = useCase.execute(order);
 
         // Then
         assertEquals(1, tasks.size());
+        verify(orderRepository, times(1)).save(order);
         verify(taskRepository, times(1)).saveAll(anyList());
         verify(commandExecutor, times(1)).executeAll(anyList());
     }
@@ -57,7 +63,10 @@ class ProcessOrderUseCaseTest {
         // Given
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
         Product pizza = new Product("Pizza", ProductType.HOT_DISH);
-        Order order = new Order(null, "B2", List.of(cocaCola, pizza));
+        Order order = new Order("B2", List.of(cocaCola, pizza));
+        Order savedOrder = Order.reconstruct(2L, "B2", List.of(cocaCola, pizza));
+        
+        when(orderRepository.save(order)).thenReturn(savedOrder);
 
         // When
         List<Task> tasks = useCase.execute(order);
@@ -73,7 +82,7 @@ class ProcessOrderUseCaseTest {
         // When & Then - la validación ya se lanza al crear el Order
         assertThrows(
             IllegalArgumentException.class,
-            () -> useCase.execute(new Order(null, "C3", List.of()))
+            () -> useCase.execute(new Order("C3", List.of()))
         );
         verify(taskRepository, never()).saveAll(anyList());
     }

@@ -20,7 +20,7 @@ class GetOrderStatusUseCaseTest {
     @BeforeEach
     void setUp() {
         taskRepository = mock(TaskRepository.class);
-        useCase = new GetOrderStatusUseCase(taskRepository);
+        useCase = new GetOrderStatusUseCase(taskRepository, new com.foodtech.kitchen.domain.services.OrderStatusCalculator());
     }
 
     @Test
@@ -86,10 +86,10 @@ class GetOrderStatusUseCaseTest {
         Long orderId = 1L;
         Product product = new Product("Pizza", ProductType.HOT_DISH);
         
-        Task pendingTask1 = new Task(1L, orderId, Station.BAR, "A1", 
-            List.of(product), LocalDateTime.now());
-        Task pendingTask2 = new Task(2L, orderId, Station.HOT_KITCHEN, "A1", 
-            List.of(product), LocalDateTime.now());
+        Task pendingTask1 = Task.reconstruct(1L, orderId, Station.BAR, "A1", 
+            List.of(product), LocalDateTime.now(), TaskStatus.PENDING, null, null);
+        Task pendingTask2 = Task.reconstruct(2L, orderId, Station.HOT_KITCHEN, "A1", 
+            List.of(product), LocalDateTime.now(), TaskStatus.PENDING, null, null);
         
         when(taskRepository.findByOrderId(orderId))
             .thenReturn(List.of(pendingTask1, pendingTask2));
@@ -109,8 +109,8 @@ class GetOrderStatusUseCaseTest {
         Long orderId = 1L;
         Product product = new Product("Pizza", ProductType.HOT_DISH);
         
-        Task pendingTask = new Task(1L, orderId, Station.BAR, "A1", 
-            List.of(product), LocalDateTime.now());
+        Task pendingTask = Task.reconstruct(1L, orderId, Station.BAR, "A1", 
+            List.of(product), LocalDateTime.now(), TaskStatus.PENDING, null, null);
         Task inPreparationTask = Task.reconstruct(2L, orderId, Station.HOT_KITCHEN, "A1", 
             List.of(product), LocalDateTime.now(), TaskStatus.IN_PREPARATION, 
             LocalDateTime.now(), null);

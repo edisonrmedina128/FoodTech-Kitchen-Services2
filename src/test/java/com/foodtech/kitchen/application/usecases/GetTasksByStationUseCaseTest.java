@@ -29,12 +29,10 @@ class GetTasksByStationUseCaseTest {
         // Given - 3 tareas pendientes: 2 BAR, 1 HOT_KITCHEN
         Product cocaCola = new Product("Coca Cola", ProductType.DRINK);
         Product sprite = new Product("Sprite", ProductType.DRINK);
-        Product pizza = new Product("Pizza", ProductType.HOT_DISH);
         
         LocalDateTime now = LocalDateTime.now();
-        Task barTask1 = new Task(null, 1L, Station.BAR, "A1", List.of(cocaCola), now);
-        Task barTask2 = new Task(null, 1L, Station.BAR, "A2", List.of(sprite), now);
-        Task hotKitchenTask = new Task(null, 1L, Station.HOT_KITCHEN, "B1", List.of(pizza), now);
+        Task barTask1 = new Task(1L, Station.BAR, "A1", List.of(cocaCola), now);
+        Task barTask2 = new Task(1L, Station.BAR, "A2", List.of(sprite), now);
         
         when(taskRepository.findByStation(Station.BAR))
             .thenReturn(List.of(barTask1, barTask2));

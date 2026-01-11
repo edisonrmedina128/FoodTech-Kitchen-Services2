@@ -22,8 +22,9 @@ public class OrderRepositoryAdapter implements OrderRepository {
     }
 
     @Override
-    public OrderEntity save(Order order) {
+    public Order save(Order order) {
         OrderEntity entity = mapper.toEntity(order);
-        return jpaRepository.save(entity);
+        OrderEntity savedEntity = jpaRepository.save(entity);
+        return mapper.toDomain(savedEntity);
     }
 }

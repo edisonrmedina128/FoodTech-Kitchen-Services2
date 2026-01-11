@@ -2,6 +2,7 @@ package com.foodtech.kitchen.application.usecases;
 
 import com.foodtech.kitchen.application.ports.in.ProcessOrderPort;
 import com.foodtech.kitchen.application.ports.out.CommandExecutor;
+import com.foodtech.kitchen.application.ports.out.OrderRepository;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
 import com.foodtech.kitchen.domain.commands.Command;
 import com.foodtech.kitchen.domain.model.Order;
@@ -16,17 +17,20 @@ import java.util.List;
 //y se ejecutan con CommandExecutor. Esto cumple el patrón Command correctamente.
 public class ProcessOrderUseCase implements ProcessOrderPort {
     
+    private final OrderRepository orderRepository;
     private final TaskDecomposer taskDecomposer;
     private final TaskRepository taskRepository;
     private final CommandFactory commandFactory;
     private final CommandExecutor commandExecutor;
 
     public ProcessOrderUseCase(
+        OrderRepository orderRepository,
         TaskDecomposer taskDecomposer,
         TaskRepository taskRepository,
         CommandFactory commandFactory,
         CommandExecutor commandExecutor
     ) {
+        this.orderRepository = orderRepository;
         this.taskDecomposer = taskDecomposer;
         this.taskRepository = taskRepository;
         this.commandFactory = commandFactory;
@@ -35,8 +39,11 @@ public class ProcessOrderUseCase implements ProcessOrderPort {
 
     @Override
     public List<Task> execute(Order order) {
+        // 0. Guardar orden y obtener ID
+        Order savedOrder = orderRepository.save(order);
+        
         // 1. Descomponer orden en tareas
-        List<Task> tasks = taskDecomposer.decompose(order);
+        List<Task> tasks = taskDecomposer.decompose(savedOrder);
         
         // 2. Guardar tareas en repositorio
         taskRepository.saveAll(tasks);

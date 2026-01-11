@@ -38,13 +38,16 @@ class StartTaskPreparationUseCaseTest {
         // Given
         Long taskId = 1L;
         Product product = new Product("Cerveza", ProductType.DRINK);
-        Task pendingTask = new Task(
+        Task pendingTask = Task.reconstruct(
                 taskId,
                 1L,
                 Station.BAR,
                 "A1",
                 List.of(product),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                TaskStatus.PENDING,
+                null,
+                null
         );
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(pendingTask));
