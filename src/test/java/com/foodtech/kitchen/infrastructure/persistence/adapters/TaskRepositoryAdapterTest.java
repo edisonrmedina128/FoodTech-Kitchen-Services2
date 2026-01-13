@@ -33,7 +33,7 @@ class TaskRepositoryAdapterTest {
     void shouldSaveTasks() {
         // Given
         Product product = new Product("Coca Cola", ProductType.DRINK);
-        Task task = new Task(null, 1L, Station.BAR, "A1", List.of(product), LocalDateTime.now());
+        Task task = new Task(1L, Station.BAR, "A1", List.of(product), LocalDateTime.now());
 
         // When
         adapter.saveAll(List.of(task));

@@ -15,7 +15,6 @@ class TaskTest {
         Product product = new Product("Cerveza", ProductType.DRINK);
         Task task = new Task(
                 1L,
-                1L,
                 Station.BAR,
                 "A1",
                 List.of(product),
@@ -35,7 +34,6 @@ class TaskTest {
         // Given
         Product product = new Product("Cerveza", ProductType.DRINK);
         Task task = new Task(
-                1L,
                 1L,
                 Station.BAR,
                 "A1",
@@ -57,7 +55,6 @@ class TaskTest {
         // Given
         Product product = new Product("Cerveza", ProductType.DRINK);
         Task task = new Task(
-                1L,
                 1L,
                 Station.BAR,
                 "A1",

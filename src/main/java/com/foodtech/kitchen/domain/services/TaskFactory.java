@@ -20,7 +20,7 @@ public class TaskFactory {
         for (Map.Entry<Station, List<Product>> entry : productsByStation.entrySet()) {
             Station station = entry.getKey();
             List<Product> products = entry.getValue();
-            tasks.add(new Task(null, orderId, station, tableNumber, products, now));
+            tasks.add(new Task( orderId, station, tableNumber, products, now));
         }
         
         return tasks;

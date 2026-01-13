@@ -1,11 +1,13 @@
 package com.foodtech.kitchen.application.usecases;
 
+import com.foodtech.kitchen.application.ports.out.CommandExecutor;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
 import com.foodtech.kitchen.domain.model.Station;
 import com.foodtech.kitchen.domain.model.Product;
 import com.foodtech.kitchen.domain.model.ProductType;
 import com.foodtech.kitchen.domain.model.Task;
 import com.foodtech.kitchen.domain.model.TaskStatus;
+import com.foodtech.kitchen.domain.services.CommandFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,11 +28,17 @@ class StartTaskPreparationUseCaseTest {
     @Mock
     private TaskRepository taskRepository;
 
+    @Mock
+    private CommandFactory commandFactory;
+
+    @Mock
+    private com.foodtech.kitchen.application.ports.out.CommandExecutor commandExecutor;
+
     private StartTaskPreparationUseCase useCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new StartTaskPreparationUseCase(taskRepository);
+        useCase = new StartTaskPreparationUseCase(taskRepository, commandFactory, commandExecutor);
     }
 
     @Test
@@ -38,13 +46,16 @@ class StartTaskPreparationUseCaseTest {
         // Given
         Long taskId = 1L;
         Product product = new Product("Cerveza", ProductType.DRINK);
-        Task pendingTask = new Task(
+        Task pendingTask = Task.reconstruct(
                 taskId,
                 1L,
                 Station.BAR,
                 "A1",
                 List.of(product),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                TaskStatus.PENDING,
+                null,
+                null
         );
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(pendingTask));

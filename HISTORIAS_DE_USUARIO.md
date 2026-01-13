@@ -1,18 +1,5 @@
 # 📋 Historias de Usuario - FoodTech Kitchen Service
 
-## 🎯 Principios INVEST
-
-Todas las historias de usuario de este proyecto cumplen con los principios INVEST:
-
-- **I**ndependent (Independiente): Cada historia puede desarrollarse y entregarse por separado
-- **N**egotiable (Negociable): Los detalles pueden refinarse con el equipo
-- **V**aluable (Valiosa): Aporta valor observable al negocio
-- **E**stimable (Estimable): Se puede estimar el esfuerzo necesario
-- **S**mall (Pequeña): Se puede completar en una iteración
-- **T**estable (Testeable): Se puede verificar su cumplimiento
-
----
-
 ## HU-001: Procesar pedido de cocina
 
 ### Descripción
@@ -20,25 +7,6 @@ Todas las historias de usuario de este proyecto cumplen con los principios INVES
 **Como** responsable de cocina  
 **Quiero** que el sistema reciba un pedido y lo descomponga automáticamente en tareas por estación  
 **Para** que cada área de preparación pueda trabajar de forma independiente y eficiente
-
-### Contexto de Negocio
-
-Actualmente, cuando llega un pedido al restaurante, el responsable de cocina debe leer manualmente todos los productos y asignarlos a las diferentes estaciones (barra, cocina caliente, cocina fría). Este proceso manual genera:
-- Demoras en la preparación
-- Errores de asignación
-- Productos olvidados
-- Falta de visibilidad por estación
-
-La solución automatiza esta descomposición, permitiendo que cada estación reciba únicamente sus tareas correspondientes de manera inmediata.
-
-### Valor de Negocio
-
-- Reducción del tiempo de procesamiento de pedidos
-- Eliminación de errores de asignación manual
-- Mayor eficiencia operativa en cocina
-- Mejor experiencia del cliente por tiempos de preparación optimizados
-
----
 
 ### Criterios de Aceptación
 
@@ -117,25 +85,6 @@ Scenario: Pedido sin identificación de mesa no puede ser procesado
 **Quiero** visualizar únicamente las tareas pendientes de mi estación  
 **Para** prepararlas sin confusión con tareas de otras áreas
 
-### Contexto de Negocio
-
-Cada estación de cocina (barra, cocina caliente, cocina fría) necesita ver solamente sus propias tareas pendientes. Si todas las estaciones ven todas las tareas, se genera:
-- Confusión sobre qué preparar
-- Duplicación de esfuerzos
-- Tareas olvidadas o no realizadas
-- Pérdida de tiempo identificando responsabilidades
-
-La solución permite que cada estación consulte únicamente sus tareas asignadas.
-
-### Valor de Negocio
-
-- Claridad operativa por estación
-- Reducción de errores de preparación
-- Mejor organización del trabajo
-- Mayor velocidad de ejecución
-
----
-
 ### Criterios de Aceptación
 
 #### Escenario 1: Consulta de tareas de una estación específica
@@ -192,130 +141,63 @@ Scenario: Consulta de estación inexistente
 ### Descripción
 
 **Como** cocinero de una estación  
-**Quiero** marcar una tarea como en preparación y posteriormente como completada  
-**Para** mantener visibilidad del estado de los pedidos en tiempo real
-
-### Contexto de Negocio
-
-Cuando un cocinero comienza a preparar una tarea, es importante que el sistema registre:
-- Qué tareas están en progreso
-- Qué tareas ya fueron completadas
-- Cuánto tiempo toma cada preparación
-
-Esto permite a los responsables de cocina y meseros saber el estado real de cada pedido.
-
-### Valor de Negocio
-
-- Visibilidad del estado de pedidos en tiempo real
-- Mejor coordinación entre estaciones
-- Métricas de tiempos de preparación
-- Comunicación efectiva con el área de servicio
-
----
+**Quiero** iniciar la preparación de una tarea asignada  
+**Para** que el sistema registre automáticamente el progreso y notifique cuando esté completada
 
 ### Criterios de Aceptación
 
 #### Escenario 1: Iniciar preparación de una tarea
-
 ```gherkin
-Scenario: Cocinero comienza a preparar una tarea
-  Given que existe una tarea pendiente con identificador único
+Scenario: Cocinero inicia preparación de una tarea pendiente
+  Given que existe una tarea pendiente para la estación de barra
   And la tarea está en estado "PENDIENTE"
-  When el cocinero inicia la preparación de la tarea
+  When el cocinero indica que inicia la preparación de la tarea
   Then el sistema cambia el estado de la tarea a "EN_PREPARACION"
   And el sistema registra la hora de inicio de preparación
 ```
 
-#### Escenario 2: Completar preparación de una tarea
-
+#### Escenario 2: Sistema completa tarea automáticamente
 ```gherkin
-Scenario: Cocinero completa la preparación de una tarea
+Scenario: Tarea se completa automáticamente al finalizar preparación
   Given que existe una tarea en estado "EN_PREPARACION"
-  When el cocinero marca la tarea como completada
-  Then el sistema cambia el estado de la tarea a "COMPLETADA"
+  And el cocinero está ejecutando la preparación física de los productos
+  When el tiempo estimado de preparación transcurre
+  Then el sistema cambia el estado de la tarea a "COMPLETADA" automáticamente
   And el sistema registra la hora de finalización
   And el sistema calcula el tiempo total de preparación
 ```
 
-#### Escenario 3: No se puede completar una tarea que no está en preparación
-
-```gherkin
-Scenario: Validación de estado antes de completar
-  Given que existe una tarea en estado "PENDIENTE"
-  When se intenta marcar la tarea como completada
-  Then el sistema rechaza la operación
-  And el sistema informa que la tarea debe estar en preparación primero
-  And la tarea permanece en estado "PENDIENTE"
-```
-
-#### Escenario 4: Visualización de todas las tareas completadas
-
+#### Escenario 3: Visualización de tareas completadas por estación
 ```gherkin
 Scenario: Consulta de tareas completadas de una estación
   Given que la estación de barra tiene 2 tareas completadas
   And la estación de barra tiene 1 tarea en preparación
   And la estación de barra tiene 1 tarea pendiente
-  When se consulta el historial de tareas completadas de barra
+  When el responsable consulta el historial de tareas completadas de barra
   Then el sistema muestra únicamente las 2 tareas completadas
   And cada tarea muestra su tiempo total de preparación
 ```
 
-#### Escenario 5: Pedido completo cuando todas sus tareas están completadas
-
+#### Escenario 4: Estado del pedido basado en estado de sus tareas
 ```gherkin
-Scenario: Estado del pedido basado en el estado de sus tareas
+Scenario: Pedido refleja el estado agregado de todas sus tareas
   Given que un pedido generó 3 tareas para diferentes estaciones
   And 2 tareas ya están completadas
   And 1 tarea está en preparación
-  When se consulta el estado del pedido
+  When el área de servicio consulta el estado del pedido
   Then el sistema indica que el pedido está "EN_PREPARACION"
-  And cuando la última tarea se completa
+  
+  When la última tarea se completa automáticamente
+  And el área de servicio consulta nuevamente el estado del pedido
   Then el sistema indica que el pedido está "COMPLETADO"
 ```
 
----
-
-## 📊 Matriz de Trazabilidad
-
-| Historia | Estación Involucrada | Prioridad | Complejidad | Dependencies |
-|----------|---------------------|-----------|-------------|--------------|
-| HU-001   | Todas               | Alta      | Media       | Ninguna      |
-| HU-002   | Todas               | Alta      | Baja        | HU-001       |
-| HU-003   | Todas               | Media     | Media       | HU-001, HU-002 |
-
----
-
-## 🎯 Orden de Implementación Sugerido
-
-1. **Sprint 1:** HU-001 (Core del negocio - Procesamiento de pedidos)
-2. **Sprint 2:** HU-002 (Consulta de tareas)
-3. **Sprint 3:** HU-003 (Ejecución y seguimiento)
-
----
-
-## 📝 Notas Importantes
-
-### Lenguaje de Negocio
-
-Todos los criterios de aceptación están escritos en **lenguaje de negocio**, no técnico:
-- ✅ "el sistema genera una tarea" (no "se crea un registro en BD")
-- ✅ "el pedido es registrado" (no "se hace POST al endpoint")
-- ✅ "se muestra el número de mesa" (no "se retorna en el JSON response")
-
-### Validez Tecnológica
-
-Los criterios son **independientes de la implementación**:
-- ✅ Válidos si usas REST API o GraphQL
-- ✅ Válidos si usas PostgreSQL o MongoDB
-- ✅ Válidos si usas Java o Python
-- ✅ Válidos si cambias el frontend
-
-### Orientación a QA
-
-Los escenarios están escritos para que **QA pueda entenderlos y probarlos** sin conocimiento técnico del código.
-
----
-
-**Versión:** 1.0  
-**Fecha:** Enero 2026  
-**Autor:** Carlos
+#### Escenario 5: No se puede iniciar una tarea ya iniciada
+```gherkin
+Scenario: Validación de estado antes de iniciar preparación
+  Given que existe una tarea en estado "EN_PREPARACION"
+  When el cocinero intenta iniciar nuevamente la preparación de la misma tarea
+  Then el sistema rechaza la operación
+  And el sistema informa que la tarea ya está en preparación
+  And la tarea permanece en estado "EN_PREPARACION"
+```
