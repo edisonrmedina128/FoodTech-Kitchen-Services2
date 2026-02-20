@@ -63,10 +63,18 @@ public class ApplicationConfig {
     @Bean
     public StartTaskPreparationPort startTaskPreparationPort(
             TaskRepository taskRepository,
+            OrderRepository orderRepository,
             CommandFactory commandFactory,
-            CommandExecutor commandExecutor
+            CommandExecutor commandExecutor,
+            OrderCompletionService orderCompletionService
     ) {
-        return new StartTaskPreparationUseCase(taskRepository, commandFactory, commandExecutor);
+        return new StartTaskPreparationUseCase(
+                taskRepository,
+                orderRepository,
+                commandFactory,
+                commandExecutor,
+            orderCompletionService
+        );
     }
 
     @Bean
@@ -79,8 +87,26 @@ public class ApplicationConfig {
     @Bean
     public GetOrderStatusPort getOrderStatusPort(
             TaskRepository taskRepository,
+            OrderRepository orderRepository,
             OrderStatusCalculator orderStatusCalculator
     ) {
-        return new GetOrderStatusUseCase(taskRepository, orderStatusCalculator);
+        return new GetOrderStatusUseCase(taskRepository, orderRepository, orderStatusCalculator);
+    }
+
+    @Bean
+    public GetCompletedOrdersPort getCompletedOrdersPort(
+            OrderRepository orderRepository,
+            TaskRepository taskRepository
+    ) {
+        return new GetCompletedOrdersUseCase(orderRepository, taskRepository);
+    }
+
+    @Bean
+    public RequestOrderInvoicePort requestOrderInvoicePort(
+            OrderRepository orderRepository,
+            com.foodtech.kitchen.application.ports.out.OutboxEventRepository outboxEventRepository,
+            InvoicePayloadBuilder payloadBuilder
+    ) {
+        return new RequestOrderInvoiceUseCase(orderRepository, outboxEventRepository, payloadBuilder);
     }
 }

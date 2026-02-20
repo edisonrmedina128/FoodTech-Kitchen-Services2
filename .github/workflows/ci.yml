@@ -9,6 +9,21 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: foodtech_db
+          POSTGRES_USER: foodtech_user
+          POSTGRES_PASSWORD: foodtech_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U foodtech_user -d foodtech_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     
     steps:
       - name: Checkout code
@@ -23,6 +38,13 @@ jobs:
       
       - name: Grant execute permission
         run: chmod +x gradlew
+
+      - name: Wait for PostgreSQL
+        run: |
+          until docker exec postgres pg_isready -U foodtech_user -d foodtech_db; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
         
       # UN SOLO PASO para todo: compila, testea, genera reporte y verifica cobertura
       - name: Build, Test and Verify Coverage
