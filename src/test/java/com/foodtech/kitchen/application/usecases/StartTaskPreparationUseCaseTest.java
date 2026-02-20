@@ -1,5 +1,6 @@
 package com.foodtech.kitchen.application.usecases;
 
+import com.foodtech.kitchen.application.exepcions.TaskNotFoundException;
 import com.foodtech.kitchen.application.ports.out.OrderRepository;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
 import com.foodtech.kitchen.domain.commands.Command;
@@ -12,9 +13,9 @@ import com.foodtech.kitchen.domain.model.Task;
 import com.foodtech.kitchen.domain.model.TaskStatus;
 import com.foodtech.kitchen.domain.ports.out.AsyncCommandDispatcher;
 import com.foodtech.kitchen.domain.services.CommandFactory;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -41,26 +42,14 @@ class StartTaskPreparationUseCaseTest {
     @Mock
     private AsyncCommandDispatcher asyncCommandDispatcher;
 
-    @Mock
-    private OrderCompletionService orderCompletionService;
-
-
+    @InjectMocks
     private StartTaskPreparationUseCase useCase;
 
-    @BeforeEach
-    void setUp() {
-        useCase = new StartTaskPreparationUseCase(
-                taskRepository,
-                orderRepository,
-                commandFactory,
-            asyncCommandDispatcher
-        );
-    }
-
     @Test
-    void shouldStartTaskPreparationWhenTaskExists() {
+    void shouldStartTaskAndDispatchCommand() {
         // Given
         Long taskId = 1L;
+        LocalDateTime now = LocalDateTime.of(2026, 2, 20, 12, 0);
         Product product = new Product("Cerveza", ProductType.DRINK);
         Task pendingTask = Task.reconstruct(
                 taskId,
@@ -68,21 +57,21 @@ class StartTaskPreparationUseCaseTest {
                 Station.BAR,
                 "A1",
                 List.of(product),
-                LocalDateTime.now(),
+                now,
                 TaskStatus.PENDING,
                 null,
                 null
         );
 
-            Task inPreparationTask = Task.reconstruct(
+        Task inPreparationTask = Task.reconstruct(
                 taskId,
                 1L,
                 Station.BAR,
                 "A1",
                 List.of(product),
-                LocalDateTime.now(),
+                now,
                 TaskStatus.IN_PREPARATION,
-                LocalDateTime.now(),
+                now,
                 null
             );
 
@@ -106,5 +95,18 @@ class StartTaskPreparationUseCaseTest {
         verify(taskRepository, atLeastOnce()).findById(taskId);
         verify(taskRepository, atLeastOnce()).save(any(Task.class));
         verify(asyncCommandDispatcher).dispatch(command, taskId);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenTaskNotFound() {
+        // Given
+        Long taskId = 99L;
+        when(taskRepository.findById(taskId)).thenReturn(Optional.empty());
+
+        // When / Then
+        assertThrows(TaskNotFoundException.class, () -> useCase.execute(taskId));
+        verify(taskRepository).findById(taskId);
+        verify(taskRepository, never()).save(any(Task.class));
+        verifyNoInteractions(asyncCommandDispatcher);
     }
 }

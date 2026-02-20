@@ -29,3 +29,9 @@
 - Application layer now framework-free
 - Clean Architecture boundary enforced
 - Build verified
+
+## PR5 - Unit Test (Proof of Decoupling)
+- Added pure unit test with mocks
+- No framework dependency in application layer
+- Verified test runs without Spring context
+- Build verified
