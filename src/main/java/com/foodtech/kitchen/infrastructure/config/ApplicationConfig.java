@@ -8,9 +8,13 @@ import com.foodtech.kitchen.application.ports.out.CommandExecutor;
 import com.foodtech.kitchen.application.ports.out.OrderRepository;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
 import com.foodtech.kitchen.application.usecases.*;
+import com.foodtech.kitchen.domain.ports.out.AsyncCommandDispatcher;
 import com.foodtech.kitchen.domain.services.*;
+import com.foodtech.kitchen.infrastructure.execution.ReactorAsyncCommandDispatcher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 public class ApplicationConfig {
@@ -34,8 +38,23 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public CommandFactory commandFactory() {
-        return new CommandFactory();
+    public PrepareDrinkStrategy prepareDrinkStrategy() {
+        return new PrepareDrinkStrategy();
+    }
+
+    @Bean
+    public PrepareHotDishStrategy prepareHotDishStrategy() {
+        return new PrepareHotDishStrategy();
+    }
+
+    @Bean
+    public PrepareColdDishStrategy prepareColdDishStrategy() {
+        return new PrepareColdDishStrategy();
+    }
+
+    @Bean
+    public CommandFactory commandFactory(List<CommandStrategy> strategies) {
+        return new CommandFactory(strategies);
     }
 
     @Bean
@@ -65,15 +84,26 @@ public class ApplicationConfig {
             TaskRepository taskRepository,
             OrderRepository orderRepository,
             CommandFactory commandFactory,
-            CommandExecutor commandExecutor,
-            OrderCompletionService orderCompletionService
+            AsyncCommandDispatcher asyncCommandDispatcher
     ) {
         return new StartTaskPreparationUseCase(
                 taskRepository,
                 orderRepository,
                 commandFactory,
+                asyncCommandDispatcher
+        );
+    }
+
+    @Bean
+    public AsyncCommandDispatcher asyncCommandDispatcher(
+            CommandExecutor commandExecutor,
+            TaskRepository taskRepository,
+            OrderCompletionService orderCompletionService
+    ) {
+        return new ReactorAsyncCommandDispatcher(
                 commandExecutor,
-            orderCompletionService
+                taskRepository,
+                orderCompletionService
         );
     }
 

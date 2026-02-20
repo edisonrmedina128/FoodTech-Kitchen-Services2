@@ -1,0 +1,24 @@
+# REFACTOR LOG
+
+## PR0 - Baseline Architecture Definition
+- Added documentation baseline
+- No production code modified
+- Build verified with ./gradlew test
+
+## PR1 - Restore Hexagonal Boundary for Task Filtering
+- Controller no longer accesses repository directly
+- Filtering logic centralized in application use case
+- Build verified with ./gradlew test
+
+## PR2 - Strategy Pattern for CommandFactory
+- Switch-case removed from CommandFactory
+- Strategy Pattern implemented for command selection
+- OCP restored and workshop compliance achieved
+- Build verified with ./gradlew test
+
+## PR3 - Extract Async Execution to Infrastructure
+- Removed Reactor from application layer
+- Introduced AsyncCommandDispatcher port
+- Moved async callbacks to infrastructure
+- SRP and DIP restored
+- Build verified

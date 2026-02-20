@@ -1,8 +1,8 @@
 package com.foodtech.kitchen.application.usecases;
 
-import com.foodtech.kitchen.application.ports.out.CommandExecutor;
 import com.foodtech.kitchen.application.ports.out.OrderRepository;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
+import com.foodtech.kitchen.domain.commands.Command;
 import com.foodtech.kitchen.domain.model.Station;
 import com.foodtech.kitchen.domain.model.Product;
 import com.foodtech.kitchen.domain.model.ProductType;
@@ -10,6 +10,7 @@ import com.foodtech.kitchen.domain.model.Order;
 import com.foodtech.kitchen.domain.model.OrderStatus;
 import com.foodtech.kitchen.domain.model.Task;
 import com.foodtech.kitchen.domain.model.TaskStatus;
+import com.foodtech.kitchen.domain.ports.out.AsyncCommandDispatcher;
 import com.foodtech.kitchen.domain.services.CommandFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ class StartTaskPreparationUseCaseTest {
     private CommandFactory commandFactory;
 
     @Mock
-    private com.foodtech.kitchen.application.ports.out.CommandExecutor commandExecutor;
+    private AsyncCommandDispatcher asyncCommandDispatcher;
 
     @Mock
     private OrderCompletionService orderCompletionService;
@@ -52,8 +53,7 @@ class StartTaskPreparationUseCaseTest {
                 taskRepository,
                 orderRepository,
                 commandFactory,
-                commandExecutor,
-                orderCompletionService
+            asyncCommandDispatcher
         );
     }
 
@@ -93,6 +93,9 @@ class StartTaskPreparationUseCaseTest {
                 .thenReturn(Optional.of(Order.reconstruct(1L, "A1", List.of(product), OrderStatus.CREATED)));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
+        Command command = mock(Command.class);
+        when(commandFactory.createCommand(any(), any())).thenReturn(command);
+
         // When
         Task result = useCase.execute(taskId);
 
@@ -102,5 +105,6 @@ class StartTaskPreparationUseCaseTest {
         assertNotNull(result.getStartedAt());
         verify(taskRepository, atLeastOnce()).findById(taskId);
         verify(taskRepository, atLeastOnce()).save(any(Task.class));
+        verify(asyncCommandDispatcher).dispatch(command, taskId);
     }
 }
