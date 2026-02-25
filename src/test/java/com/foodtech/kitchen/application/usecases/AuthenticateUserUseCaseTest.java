@@ -76,4 +76,32 @@ class AuthenticateUserUseCaseTest {
 
         verify(tokenProvider, never()).generateToken(any());
     }
+
+        @Test
+        void authenticateUser_whenUserIsInactive_throwsException() {
+        String identifier = "user@mail.com";
+        String rawPassword = "abc123";
+        String storedHash = "hashedPassword";
+
+        User user = new User(
+            1L,
+            "username",
+            identifier,
+            storedHash,
+            UserStatus.INACTIVE,
+            LocalDateTime.now(),
+            null
+        );
+
+        when(userRepository.findByEmailOrUsername(identifier))
+            .thenReturn(Optional.of(user));
+
+        when(passwordHasher.matches(rawPassword, storedHash))
+            .thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class,
+            () -> authenticateUserUseCase.execute(identifier, rawPassword));
+
+        verify(tokenProvider, never()).generateToken(any());
+        }
 }

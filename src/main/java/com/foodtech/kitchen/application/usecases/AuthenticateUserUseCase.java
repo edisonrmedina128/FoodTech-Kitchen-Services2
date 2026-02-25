@@ -4,6 +4,7 @@ import com.foodtech.kitchen.application.ports.out.PasswordHasher;
 import com.foodtech.kitchen.application.ports.out.TokenProvider;
 import com.foodtech.kitchen.application.ports.out.UserRepository;
 import com.foodtech.kitchen.domain.model.User;
+import com.foodtech.kitchen.domain.model.UserStatus;
 
 public class AuthenticateUserUseCase {
     private final UserRepository userRepository;
@@ -23,6 +24,9 @@ public class AuthenticateUserUseCase {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         if (!passwordHasher.matches(password, user.getPasswordHash())) {
             throw new IllegalArgumentException("Invalid credentials");
+        }
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("User is not active");
         }
         return null;
     }
