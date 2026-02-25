@@ -28,6 +28,7 @@ public class AuthenticateUserUseCase {
         if (user.getStatus() != UserStatus.ACTIVE) {
             throw new IllegalArgumentException("User is not active");
         }
-        return null;
+        String token = tokenProvider.generateToken(user);
+        return token;
     }
 }

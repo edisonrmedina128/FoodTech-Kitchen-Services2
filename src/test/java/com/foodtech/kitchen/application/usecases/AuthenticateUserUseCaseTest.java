@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -103,5 +104,38 @@ class AuthenticateUserUseCaseTest {
             () -> authenticateUserUseCase.execute(identifier, rawPassword));
 
         verify(tokenProvider, never()).generateToken(any());
+        }
+
+        @Test
+        void authenticateUser_whenCredentialsAreValid_returnsToken() {
+        String identifier = "user@mail.com";
+        String rawPassword = "abc123";
+        String storedHash = "hashedPassword";
+        String expectedToken = "jwt-token";
+
+        User user = new User(
+            1L,
+            "username",
+            identifier,
+            storedHash,
+            UserStatus.ACTIVE,
+            LocalDateTime.now(),
+            null
+        );
+
+        when(userRepository.findByEmailOrUsername(identifier))
+            .thenReturn(Optional.of(user));
+
+        when(passwordHasher.matches(rawPassword, storedHash))
+            .thenReturn(true);
+
+        when(tokenProvider.generateToken(user))
+            .thenReturn(expectedToken);
+
+        String result = authenticateUserUseCase.execute(identifier, rawPassword);
+
+        assertEquals(expectedToken, result);
+
+        verify(tokenProvider).generateToken(user);
         }
 }
