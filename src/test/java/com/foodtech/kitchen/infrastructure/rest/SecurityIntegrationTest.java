@@ -78,4 +78,29 @@ class SecurityIntegrationTest {
                 .header("Authorization", "Bearer " + expiredToken))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @DisplayName("RED: Protected endpoint with malformed token returns 401")
+    void protectedEndpoint_withMalformedToken_returns401() throws Exception {
+        mockMvc.perform(get("/api/tasks/station/BAR")
+                .header("Authorization", "Bearer not-a-jwt"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("RED: Protected endpoint with invalid signature returns 401")
+    void protectedEndpoint_withInvalidSignature_returns401() throws Exception {
+        Instant fixedInstant = Instant.parse("2025-01-01T00:00:00Z");
+        Clock fixedClock = Clock.fixed(fixedInstant, ZoneOffset.UTC);
+        JwtTokenGenerator generator = new JwtTokenGenerator(
+                "different-secret-for-test-signature-1234567890",
+                3600L,
+                fixedClock
+        );
+        String invalidSignatureToken = generator.generateToken("auth-user");
+
+        mockMvc.perform(get("/api/tasks/station/BAR")
+                .header("Authorization", "Bearer " + invalidSignatureToken))
+                .andExpect(status().isUnauthorized());
+    }
 }
