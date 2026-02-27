@@ -2,6 +2,8 @@ package com.foodtech.kitchen.application.usecases;
 
 import com.foodtech.kitchen.application.ports.out.PasswordHasher;
 import com.foodtech.kitchen.application.ports.out.UserRepository;
+import com.foodtech.kitchen.application.exepcions.DuplicateEmailException;
+import com.foodtech.kitchen.application.exepcions.DuplicateUsernameException;
 import com.foodtech.kitchen.domain.model.User;
 import com.foodtech.kitchen.domain.model.UserStatus;
 
@@ -18,10 +20,10 @@ public class RegisterUserUseCase {
         validateEmail(email);
         validatePassword(rawPassword);
         if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Email already registered");
+            throw new DuplicateEmailException("Email already registered");
         }
         if (userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("Username already registered");
+            throw new DuplicateUsernameException("Username already registered");
         }
         String passwordHash = passwordHasher.hash(rawPassword);
         User user = new User(username, email, passwordHash, UserStatus.ACTIVE);

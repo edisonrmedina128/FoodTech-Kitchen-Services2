@@ -4,6 +4,8 @@ import com.foodtech.kitchen.domain.model.User;
 import com.foodtech.kitchen.domain.model.UserStatus;
 import com.foodtech.kitchen.application.ports.out.PasswordHasher;
 import com.foodtech.kitchen.application.ports.out.UserRepository;
+import com.foodtech.kitchen.application.exepcions.DuplicateEmailException;
+import com.foodtech.kitchen.application.exepcions.DuplicateUsernameException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -81,7 +83,7 @@ class RegisterUserUseCaseTest {
 
         when(userRepository.existsByEmail(email)).thenReturn(true);
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(DuplicateEmailException.class,
                 () -> registerUserUseCase.execute(username, email, password));
 
         verify(passwordHasher, never()).hash(any());
@@ -96,7 +98,7 @@ class RegisterUserUseCaseTest {
 
         when(userRepository.existsByUsername(username)).thenReturn(true);
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(DuplicateUsernameException.class,
                 () -> registerUserUseCase.execute(username, email, password));
 
         verify(passwordHasher, never()).hash(any());

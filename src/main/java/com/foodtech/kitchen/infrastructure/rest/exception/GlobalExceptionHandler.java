@@ -2,6 +2,8 @@ package com.foodtech.kitchen.infrastructure.rest.exception;
 
 import com.foodtech.kitchen.application.exepcions.OrderNotFoundException;
 import com.foodtech.kitchen.application.exepcions.TaskNotFoundException;
+import com.foodtech.kitchen.application.exepcions.DuplicateEmailException;
+import com.foodtech.kitchen.application.exepcions.DuplicateUsernameException;
 import com.foodtech.kitchen.infrastructure.rest.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +33,26 @@ public class GlobalExceptionHandler {
             HttpStatus.NOT_FOUND.value()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateEmailException(DuplicateEmailException ex) {
+        ErrorResponse error = new ErrorResponse(
+            ex.getMessage(),
+            "Duplicate email",
+            HttpStatus.CONFLICT.value()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(DuplicateUsernameException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateUsernameException(DuplicateUsernameException ex) {
+        ErrorResponse error = new ErrorResponse(
+            ex.getMessage(),
+            "Duplicate username",
+            HttpStatus.CONFLICT.value()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

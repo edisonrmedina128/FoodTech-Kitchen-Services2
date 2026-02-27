@@ -27,13 +27,9 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody RegisterRequest request) {
-        try {
-            registerUserUseCase.execute(request.username(), request.email(), request.password());
-        } catch (IllegalArgumentException ex) {
-            if (!isDuplicateUserError(ex.getMessage())) {
-                throw ex;
-            }
-        }
+        // ⚕️ HUMAN CHECK: Exception mapping is delegated to GlobalExceptionHandler.
+        // Controller must not swallow domain/application exceptions.
+        registerUserUseCase.execute(request.username(), request.email(), request.password());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -43,8 +39,4 @@ public class AuthController {
         return ResponseEntity.ok(new LoginResponse(token));
     }
 
-    private boolean isDuplicateUserError(String message) {
-        return "Email already registered".equals(message)
-                || "Username already registered".equals(message);
-    }
 }
