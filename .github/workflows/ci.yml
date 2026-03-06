@@ -118,6 +118,8 @@ jobs:
   dependency-scan:
     runs-on: ubuntu-latest
     needs: preflight
+    env:
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
     steps:
       - uses: actions/checkout@v4
 
