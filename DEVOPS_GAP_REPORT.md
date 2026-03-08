@@ -22,7 +22,7 @@ Observed build tooling:
 ## 2) Missing CI/CD Best Practices
 
 - No separate lint/static analysis stage (e.g., Checkstyle/SpotBugs/PMD/Spotless).
-- No SAST or dependency vulnerability scanning (e.g., CodeQL, OWASP Dependency-Check, Snyk).
+- No SAST or dependency vulnerability scanning (e.g., CodeQL, dependency scanning, Snyk).
 - No test result publishing (JUnit XML) or code coverage publishing (XML) to CI summary.
 - No cache for Gradle dependencies (slower builds).
 - No build matrix (OS/JDK versions) or build reproducibility checks.

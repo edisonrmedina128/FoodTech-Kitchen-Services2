@@ -4,7 +4,6 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.4'
     id 'jacoco'
     id 'org.cyclonedx.bom' version '1.8.2'
-    id 'org.owasp.dependencycheck' version '9.2.0'
 }
 
 group = 'com.foodtech'
@@ -90,6 +89,9 @@ tasks.register('unitTest', Test) {
     useJUnitPlatform {
         includeTags 'unit'
     }
+    jacoco {
+        destinationFile = layout.buildDirectory.file('jacoco/unitTest.exec').get().asFile
+    }
 }
 
 tasks.register('componentTest', Test) {
@@ -99,6 +101,9 @@ tasks.register('componentTest', Test) {
     classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform {
         includeTags 'component'
+    }
+    jacoco {
+        destinationFile = layout.buildDirectory.file('jacoco/componentTest.exec').get().asFile
     }
 }
 
@@ -111,6 +116,9 @@ tasks.register('integrationTest', Test) {
         includeTags 'integration'
     }
     systemProperty 'spring.profiles.active', 'test'
+    jacoco {
+        destinationFile = layout.buildDirectory.file('jacoco/integrationTest.exec').get().asFile
+    }
 }
 
 tasks.register('blackboxTest', Test) {
@@ -120,6 +128,9 @@ tasks.register('blackboxTest', Test) {
     classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform {
         includeTags 'blackbox'
+    }
+    jacoco {
+        destinationFile = layout.buildDirectory.file('jacoco/blackboxTest.exec').get().asFile
     }
 }
 
@@ -140,7 +151,7 @@ def jacocoClassDirs = sourceSets.main.output.asFileTree.matching {
 
 tasks.register('jacocoUnitTestReport', JacocoReport) {
     dependsOn tasks.named('unitTest')
-    executionData(tasks.named('unitTest'))
+    executionData(layout.buildDirectory.file('jacoco/unitTest.exec'))
     sourceDirectories.setFrom(sourceSets.main.allSource.srcDirs)
     classDirectories.setFrom(jacocoClassDirs)
     reports {
@@ -152,7 +163,7 @@ tasks.register('jacocoUnitTestReport', JacocoReport) {
 
 tasks.register('jacocoComponentTestReport', JacocoReport) {
     dependsOn tasks.named('componentTest')
-    executionData(tasks.named('componentTest'))
+    executionData(layout.buildDirectory.file('jacoco/componentTest.exec'))
     sourceDirectories.setFrom(sourceSets.main.allSource.srcDirs)
     classDirectories.setFrom(jacocoClassDirs)
     reports {
@@ -164,7 +175,7 @@ tasks.register('jacocoComponentTestReport', JacocoReport) {
 
 tasks.register('jacocoIntegrationTestReport', JacocoReport) {
     dependsOn tasks.named('integrationTest')
-    executionData(tasks.named('integrationTest'))
+    executionData(layout.buildDirectory.file('jacoco/integrationTest.exec'))
     sourceDirectories.setFrom(sourceSets.main.allSource.srcDirs)
     classDirectories.setFrom(jacocoClassDirs)
     reports {
@@ -203,16 +214,6 @@ jacocoTestCoverageVerification {
 }
 
 check.dependsOn jacocoTestCoverageVerification
-
-dependencyCheck {
-    format = 'HTML'
-    failBuildOnCVSS = 11
-
-    nvd {
-        apiKey = System.getenv('NVD_API_KEY')
-        delay = 8000
-    }
-}
 
 cyclonedxBom {
     includeConfigs = ['runtimeClasspath']
