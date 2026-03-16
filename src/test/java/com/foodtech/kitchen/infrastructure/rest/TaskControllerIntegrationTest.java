@@ -1,17 +1,21 @@
 package com.foodtech.kitchen.infrastructure.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.foodtech.kitchen.application.ports.out.TokenGenerator;
 import com.foodtech.kitchen.application.ports.out.TaskRepository;
 import com.foodtech.kitchen.domain.model.Station;
 import com.foodtech.kitchen.domain.model.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.util.List;
 import java.util.Map;
@@ -21,8 +25,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Tag("integration")
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class TaskControllerIntegrationTest {
 
     @Autowired
@@ -34,8 +40,15 @@ class TaskControllerIntegrationTest {
     @Autowired
     private TaskRepository taskRepository;
 
+    @Autowired
+    private TokenGenerator tokenGenerator;
+
+    private String authHeaderValue;
+
     @BeforeEach
     void setUp() throws Exception {
+        authHeaderValue = "Bearer " + tokenGenerator.generateToken("test-user");
+
         // Given - Preparar datos: 3 tareas (2 BAR, 1 HOT_KITCHEN)
         
         // Crear pedido con bebidas para BAR
@@ -46,6 +59,7 @@ class TaskControllerIntegrationTest {
             )
         );
         mockMvc.perform(post("/api/orders")
+            .with(auth())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(orderBar1)));
 
@@ -57,6 +71,7 @@ class TaskControllerIntegrationTest {
             )
         );
         mockMvc.perform(post("/api/orders")
+            .with(auth())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(orderBar2)));
 
@@ -68,8 +83,16 @@ class TaskControllerIntegrationTest {
             )
         );
         mockMvc.perform(post("/api/orders")
+            .with(auth())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(orderHotKitchen)));
+    }
+
+    private RequestPostProcessor auth() {
+        return request -> {
+            request.addHeader("Authorization", authHeaderValue);
+            return request;
+        };
     }
 
     @Test
@@ -77,7 +100,7 @@ class TaskControllerIntegrationTest {
     void shouldReturnOnlyTasksForSpecifiedStation() throws Exception {
         // When - el encargado de barra consulta sus tareas
         // Then - el sistema muestra únicamente tareas de barra (verifica filtrado)
-        mockMvc.perform(get("/api/tasks/station/BAR"))
+        mockMvc.perform(get("/api/tasks/station/BAR").with(auth()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").isArray())
             .andExpect(jsonPath("$[0]").exists())  // Al menos una tarea
@@ -93,7 +116,7 @@ class TaskControllerIntegrationTest {
         // Given - Todas las tareas son de HOT_KITCHEN, ninguna para COLD_KITCHEN
         // When - el encargado de cocina fría consulta sus tareas
         // Then - el sistema muestra que no hay tareas pendientes
-        mockMvc.perform(get("/api/tasks/station/COLD_KITCHEN"))
+        mockMvc.perform(get("/api/tasks/station/COLD_KITCHEN").with(auth()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").isArray())
             .andExpect(jsonPath("$").isEmpty());
@@ -105,7 +128,7 @@ class TaskControllerIntegrationTest {
         // Given - tareas ya creadas en setUp
         // When - el encargado consulta las tareas
         // Then - el sistema muestra información completa incluyendo createdAt
-        mockMvc.perform(get("/api/tasks/station/BAR"))
+        mockMvc.perform(get("/api/tasks/station/BAR").with(auth()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].tableNumber").exists())
             .andExpect(jsonPath("$[0].station").value("BAR"))
@@ -121,7 +144,7 @@ class TaskControllerIntegrationTest {
         // Given - el sistema solo reconoce BAR, HOT_KITCHEN, COLD_KITCHEN
         // When - se consultan tareas para una estación no reconocida
         // Then - el sistema informa que la estación no existe
-        mockMvc.perform(get("/api/tasks/station/INVALID_STATION"))
+        mockMvc.perform(get("/api/tasks/station/INVALID_STATION").with(auth()))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.error").exists())
             .andExpect(jsonPath("$.message").exists());
@@ -136,7 +159,7 @@ class TaskControllerIntegrationTest {
         Long taskId = allTasks.get(0).getId();
 
         // When - el cocinero inicia la preparación de la tarea
-        mockMvc.perform(patch("/api/tasks/" + taskId + "/start"))
+        mockMvc.perform(patch("/api/tasks/" + taskId + "/start").with(auth()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(taskId))
             .andExpect(jsonPath("$.status").value("IN_PREPARATION"))
@@ -165,7 +188,7 @@ class TaskControllerIntegrationTest {
         taskRepository.save(task2);
 
         // When - se consulta el historial de tareas completadas de barra
-        mockMvc.perform(get("/api/tasks/station/BAR?status=COMPLETED"))
+        mockMvc.perform(get("/api/tasks/station/BAR?status=COMPLETED").with(auth()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
             .andExpect(jsonPath("$[0].status").value("COMPLETED"))
@@ -192,6 +215,7 @@ class TaskControllerIntegrationTest {
         ));
 
         mockMvc.perform(post("/api/orders")
+            .with(auth())
             .contentType(MediaType.APPLICATION_JSON)
             .content(orderRequest))
             .andExpect(status().isCreated());
@@ -205,16 +229,16 @@ class TaskControllerIntegrationTest {
         assertEquals(3, orderTasks.size());
         
         // Initially all tasks are PENDING
-        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+        mockMvc.perform(get("/api/orders/" + orderId + "/status").with(auth()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.orderId").value(orderId.toString()))
             .andExpect(jsonPath("$.status").value("PENDING"));
 
         // Start one task - order should be IN_PREPARATION
-        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(0).getId() + "/start"))
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(0).getId() + "/start").with(auth()))
             .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+        mockMvc.perform(get("/api/orders/" + orderId + "/status").with(auth()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("IN_PREPARATION"));
 
@@ -229,15 +253,15 @@ class TaskControllerIntegrationTest {
         taskRepository.save(task1);
 
         // With 2 completed and 1 pending, status is still IN_PREPARATION because at least one task was started
-        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+        mockMvc.perform(get("/api/orders/" + orderId + "/status").with(auth()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("IN_PREPARATION"));
 
         // Start last task - order should be IN_PREPARATION
-        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(2).getId() + "/start"))
+        mockMvc.perform(patch("/api/tasks/" + orderTasks.get(2).getId() + "/start").with(auth()))
             .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+        mockMvc.perform(get("/api/orders/" + orderId + "/status").with(auth()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("IN_PREPARATION"));
 
@@ -246,7 +270,7 @@ class TaskControllerIntegrationTest {
         task2.complete();
         taskRepository.save(task2);
 
-        mockMvc.perform(get("/api/orders/" + orderId + "/status"))
+        mockMvc.perform(get("/api/orders/" + orderId + "/status").with(auth()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("COMPLETED"));
     }

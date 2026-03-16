@@ -6,11 +6,8 @@ import com.foodtech.kitchen.application.ports.out.TaskRepository;
 import com.foodtech.kitchen.domain.model.Order;
 import com.foodtech.kitchen.domain.model.Task;
 import com.foodtech.kitchen.domain.services.TaskDecomposer;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 
-@Service
 public class ProcessOrderUseCase implements ProcessOrderPort {
 
     private final OrderRepository orderRepository;

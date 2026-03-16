@@ -5,6 +5,7 @@ import com.foodtech.kitchen.domain.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@Tag("unit")
 class GetTasksByStationUseCaseTest {
 
     private GetTasksByStationUseCase useCase;
@@ -38,7 +40,7 @@ class GetTasksByStationUseCaseTest {
             .thenReturn(List.of(barTask1, barTask2));
 
         // When - el encargado de barra consulta sus tareas
-        List<Task> tasks = useCase.execute(Station.BAR);
+        List<Task> tasks = useCase.execute(Station.BAR, null);
 
         // Then - el sistema muestra únicamente las 2 tareas de barra
         assertEquals(2, tasks.size());
@@ -54,7 +56,7 @@ class GetTasksByStationUseCaseTest {
             .thenReturn(List.of());
 
         // When - el encargado de barra consulta sus tareas
-        List<Task> tasks = useCase.execute(Station.BAR);
+        List<Task> tasks = useCase.execute(Station.BAR, null);
 
         // Then - el sistema muestra que no hay tareas pendientes
         assertNotNull(tasks);

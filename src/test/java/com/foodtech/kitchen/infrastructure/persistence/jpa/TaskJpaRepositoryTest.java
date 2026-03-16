@@ -2,18 +2,22 @@ package com.foodtech.kitchen.infrastructure.persistence.jpa;
 
 import com.foodtech.kitchen.domain.model.Station;
 import com.foodtech.kitchen.infrastructure.persistence.jpa.entities.TaskEntity;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("integration")
 @SpringBootTest
 @Transactional
+@ActiveProfiles("test")
 class TaskJpaRepositoryTest {
 
     @Autowired

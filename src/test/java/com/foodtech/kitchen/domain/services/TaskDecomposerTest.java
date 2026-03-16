@@ -5,11 +5,13 @@ import com.foodtech.kitchen.domain.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("unit")
 class TaskDecomposerTest {
 
     private TaskDecomposer decomposer;
@@ -180,7 +182,11 @@ class TaskDecomposerTest {
         Product pizza = new Product("Pizza", ProductType.HOT_DISH);
         Order order = new Order("H8", List.of(cocaCola, pizza));
 
-        CommandFactory commandFactory = new CommandFactory();
+        CommandFactory commandFactory = new CommandFactory(List.of(
+            new PrepareDrinkStrategy(),
+            new PrepareHotDishStrategy(),
+            new PrepareColdDishStrategy()
+        ));
 
         // When
         List<Task> tasks = decomposer.decompose(order);

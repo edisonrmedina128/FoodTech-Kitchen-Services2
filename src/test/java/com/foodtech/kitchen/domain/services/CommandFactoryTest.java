@@ -5,18 +5,24 @@ import com.foodtech.kitchen.domain.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("unit")
 class CommandFactoryTest {
 
     private CommandFactory factory;
 
     @BeforeEach
     void setUp() {
-        factory = new CommandFactory();
+        factory = new CommandFactory(List.of(
+                new PrepareDrinkStrategy(),
+                new PrepareHotDishStrategy(),
+                new PrepareColdDishStrategy()
+        ));
     }
 
     @Test

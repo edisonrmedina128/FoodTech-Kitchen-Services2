@@ -3,6 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.2.1'
     id 'io.spring.dependency-management' version '1.1.4'
     id 'jacoco'
+    id 'org.cyclonedx.bom' version '1.8.2'
 }
 
 group = 'com.foodtech'
@@ -30,6 +31,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // ✅ NUEVO: Project Reactor para programación reactiva
     implementation 'io.projectreactor:reactor-core:3.6.0'
@@ -37,8 +39,12 @@ dependencies {
     // Jackson (explícito para IDE)
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     
     // Database
+    runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'com.h2database:h2'
     
     // Lombok
@@ -49,6 +55,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'io.projectreactor:reactor-test'
+    testImplementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    testRuntimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    testRuntimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
     // Lombok for tests
     testCompileOnly 'org.projectlombok:lombok'
@@ -60,8 +69,120 @@ tasks.named('test') {
     finalizedBy jacocoTestReport
 }
 
+tasks.named('bootJar') {
+    archiveFileName = 'app.jar'
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    reports {
+        junitXml.required = true
+        html.required = true
+    }
+}
+
+tasks.register('unitTest', Test) {
+    description = 'Runs unit tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'unit'
+    }
+    jacoco {
+        destinationFile = layout.buildDirectory.file('jacoco/unitTest.exec').get().asFile
+    }
+}
+
+tasks.register('componentTest', Test) {
+    description = 'Runs component tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'component'
+    }
+    jacoco {
+        destinationFile = layout.buildDirectory.file('jacoco/componentTest.exec').get().asFile
+    }
+}
+
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
+    systemProperty 'spring.profiles.active', 'test'
+    jacoco {
+        destinationFile = layout.buildDirectory.file('jacoco/integrationTest.exec').get().asFile
+    }
+}
+
+tasks.register('blackboxTest', Test) {
+    description = 'Runs blackbox tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'blackbox'
+    }
+    jacoco {
+        destinationFile = layout.buildDirectory.file('jacoco/blackboxTest.exec').get().asFile
+    }
+}
+
 jacoco {
     toolVersion = "0.8.11"
+}
+
+def jacocoExcludedClasses = [
+    '**/KitchenServiceApplication.class',
+    '**/KitchenServiceApplication$*.class',
+    '**/infrastructure/config/**',
+    '**/*JpaRepository.class'
+]
+
+def jacocoClassDirs = sourceSets.main.output.asFileTree.matching {
+    exclude jacocoExcludedClasses
+}
+
+tasks.register('jacocoUnitTestReport', JacocoReport) {
+    dependsOn tasks.named('unitTest')
+    executionData(layout.buildDirectory.file('jacoco/unitTest.exec'))
+    sourceDirectories.setFrom(sourceSets.main.allSource.srcDirs)
+    classDirectories.setFrom(jacocoClassDirs)
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+tasks.register('jacocoComponentTestReport', JacocoReport) {
+    dependsOn tasks.named('componentTest')
+    executionData(layout.buildDirectory.file('jacoco/componentTest.exec'))
+    sourceDirectories.setFrom(sourceSets.main.allSource.srcDirs)
+    classDirectories.setFrom(jacocoClassDirs)
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+tasks.register('jacocoIntegrationTestReport', JacocoReport) {
+    dependsOn tasks.named('integrationTest')
+    executionData(layout.buildDirectory.file('jacoco/integrationTest.exec'))
+    sourceDirectories.setFrom(sourceSets.main.allSource.srcDirs)
+    classDirectories.setFrom(jacocoClassDirs)
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
 }
 
 jacocoTestReport {
@@ -74,16 +195,7 @@ jacocoTestReport {
 
     // Mueve la configuración aquí, fuera de doFirst
     // Usamos afterEvaluate para asegurar que los directorios por defecto ya existen antes de filtrar
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                '**/KitchenServiceApplication.class',
-                '**/KitchenServiceApplication$*.class',
-                '**/infrastructure/config/**',
-                '**/*JpaRepository.class'
-            ])
-        }))
-    }
+    classDirectories.setFrom(jacocoClassDirs)
 }
 
 jacocoTestCoverageVerification {
@@ -92,22 +204,21 @@ jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = 0.70
+                minimum = 0.75
             }
         }
     }
     
     // Mismo cambio aquí: Eliminar doFirst y usar afterEvaluate
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                '**/KitchenServiceApplication.class',
-                '**/KitchenServiceApplication$*.class',
-                '**/infrastructure/config/**',
-                '**/*JpaRepository.class'
-            ])
-        }))
-    }
+    classDirectories.setFrom(jacocoClassDirs)
 }
 
 check.dependsOn jacocoTestCoverageVerification
+
+cyclonedxBom {
+    includeConfigs = ['runtimeClasspath']
+    projectType = 'application'
+    schemaVersion = '1.5'
+    outputFormat = 'json'
+    outputName = 'bom'
+}
